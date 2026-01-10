@@ -64,5 +64,17 @@ function searchSymbol() {
     <button onclick="toggleFavorite('${symbol}')">❤️ Favorite</button>
   `;
 }
+function toggleFavorite(symbol) {
+  const data = getUserData();
+
+  if (data.favorites.includes(symbol)) {
+    data.favorites = data.favorites.filter(s => s !== symbol);
+  } else {
+    data.favorites.push(symbol);
+  }
+
+  saveUserData(data);
+  loadFavorites();
+}
 
 loadHome();
