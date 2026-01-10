@@ -1,114 +1,29 @@
 const view = document.getElementById("view");
+let priceInterval = null;
 
+/* ---------- HOME ---------- */
 async function loadHome() {
-  const user = getCurrentUser();
-  let favorites = [];
-
-  if (user) {
-    favorites = getUserData().favorites;
-  }
-
-<div class="card row">
-  <span>BTC</span>
-  <span class="green">Bullish</span>
-</div>
-
-<div class="card row">
-  <span>ETH</span>
-  <span class="red">Bearish</span>
-</div>
-
+  const btc = await getCryptoPrice("BTC");
+  const eth = await getCryptoPrice("ETH");
 
   view.innerHTML = `
     <h2>Home</h2>
 
     <div class="section">
-      <h3>🔥 Popular</h3>
-
-      <div class="card row">
-        <span>BTC</span>
-        <span class="price">${btc ? `$${btc}` : "—"}</span>
-      </div>
-
-      <div class="card row">
-        <span>ETH</span>
-        <span class="price">${eth ? `$${eth}` : "—"}</span>
-      </div>
+      <div class="card row"><span>BTC</span><span>$${btc ?? "—"}</span></div>
+      <div class="card row"><span>ETH</span><span>$${eth ?? "—"}</span></div>
     </div>
-
-    ${
-      favorites.length > 0
-        ? `
-        <div class="section">
-          <h3>❤️ Your Favorites</h3>
-          ${favorites
-            .map(
-              sym => `
-            <div class="card row">
-              <span>${sym}</span>
-              <button class="secondary" onclick="goToSymbol('${sym}')">View</button>
-            </div>
-          `
-            )
-            .join("")}
-        </div>
-        `
-        : ""
-    }
   `;
 }
 
+/* ---------- SEARCH ---------- */
 function loadSearch() {
-view.innerHTML = `
-  <h2>Search</h2>
-  <input id="symbol" placeholder="Search (BTC, ETH, AAPL)">
-  <button onclick="searchSymbol()">Search</button>
-  <div id="searchResult"></div>
-`;
-
-}
-
-function loadFavorites() {
-  const user = getCurrentUser();
-
-  if (!user) {
-    view.innerHTML = "<p>Please sign in to view favorites.</p>";
-    return;
-  }
-
-  const data = getUserData();
-
-  if (data.favorites.length === 0) {
-    view.innerHTML = "<p>No favorites yet ❤️</p>";
-    return;
-  }
-
   view.innerHTML = `
-    <h2>Favorites ❤️</h2>
-    ${data.favorites.map(sym =>
-      `<p>${sym}</p>`
-    ).join("")}
+    <h2>Search</h2>
+    <input id="symbol" placeholder="BTC, ETH, SOL" />
+    <button onclick="searchSymbol()">Search</button>
+    <div id="searchResult"></div>
   `;
-}
-
-function loadSettings() {
-  const user = getCurrentUser();
-
-  if (user) {
-    view.innerHTML = `
-      <h2>Settings</h2>
-      <p>Logged in as <strong>${user}</strong></p>
-      <button onclick="signOut()">Sign Out</button>
-    `;
-  } else {
-    view.innerHTML = `
-      <h2>Settings</h2>
-      <input id="username" placeholder="Username">
-      <input id="password" type="password" placeholder="Password">
-      <button onclick="signIn(username.value, password.value)">Sign In</button>
-      <button onclick="signUp(username.value, password.value)">Sign Up</button>
-    `;
-  }
 }
 
 async function searchSymbol() {
@@ -116,92 +31,108 @@ async function searchSymbol() {
   if (!symbol) return;
 
   const result = document.getElementById("searchResult");
-  const user = getCurrentUser();
+  const price = await getCryptoPrice(symbol);
 
+  let ai = null;
+  try {
+    ai = await getAIBias(symbol);
+  } catch {}
+
+  const user = getCurrentUser();
   let isFav = false;
-  let price = null;
 
   if (user) {
     const data = getUserData();
-
-    if (!data.recent.includes(symbol)) {
-      data.recent.unshift(symbol);
-      data.recent = data.recent.slice(0, 10);
-      saveUserData(data);
-    }
-
     isFav = data.favorites.includes(symbol);
   }
 
-  price = await getCryptoPrice(symbol);
-  const ai = await getAIBias(symbol);
-
-
   result.innerHTML = `
-result.innerHTML = `
-  <div class="card">
-    <div class="row">
+    <div class="card">
       <strong>${symbol}</strong>
-      <span class="price">$${price ?? "—"}</span>
+      <p>Price: <span id="livePrice">$${price ?? "—"}</span></p>
+      ${
+        ai
+          ? `<p>🤖 ${ai.bias}<br>Change: ${ai.change}%</p>`
+          : ""
+      }
+      ${
+        user
+          ? `<button onclick="toggleFavorite('${symbol}')">
+              ${isFav ? "💔 Unfavorite" : "❤️ Favorite"}
+            </button>`
+          : `<p>Sign in to favorite</p>`
+      }
     </div>
+  `;
 
-    ${
-      ai
-        ? `
-        <p>
-          🤖 AI Bias: <strong>${ai.bias}</strong><br>
-          Confidence: ${ai.confidence}%<br>
-          24h Change: ${ai.change}%
-        </p>
-        `
-        : `<p>AI data unavailable</p>`
-    }
-
-    ${
-      user
-        ? `<button onclick="toggleFavorite('${symbol}')">
-            ${isFav ? "💔 Unfavorite" : "❤️ Favorite"}
-          </button>`
-        : ""
-    }
-  </div>
-`;
-
-}
-
-let priceInterval = null;
-startPriceUpdates(symbol);
-
-
-function startPriceUpdates(symbol) {
   clearInterval(priceInterval);
-  priceInterval = setInterval(() => {
-    getCryptoPrice(symbol).then(price => {
-      const p = document.getElementById("livePrice");
-      if (p && price) p.innerText = `$${price}`;
-    });
+  priceInterval = setInterval(async () => {
+    const p = await getCryptoPrice(symbol);
+    const el = document.getElementById("livePrice");
+    if (el && p) el.innerText = `$${p}`;
   }, 20000);
 }
 
-
+/* ---------- FAVORITES ---------- */
 function toggleFavorite(symbol) {
   const data = getUserData();
-
   if (data.favorites.includes(symbol)) {
     data.favorites = data.favorites.filter(s => s !== symbol);
   } else {
     data.favorites.push(symbol);
   }
-
   saveUserData(data);
-  loadFavorites();
+  searchSymbol();
 }
-function goToSymbol(symbol) {
+
+function loadFavorites() {
+  const user = getCurrentUser();
+  if (!user) {
+    view.innerHTML = "<p>Please sign in.</p>";
+    return;
+  }
+
+  const favs = getUserData().favorites;
+
+  view.innerHTML = `
+    <h2>Favorites</h2>
+    ${
+      favs.length === 0
+        ? "<p>No favorites yet.</p>"
+        : favs.map(f => `
+            <div class="card row">
+              <span>${f}</span>
+              <button class="secondary" onclick="goToSymbol('${f}')">View</button>
+            </div>
+          `).join("")
+    }
+  `;
+}
+
+/* ---------- SETTINGS ---------- */
+function loadSettings() {
+  const user = getCurrentUser();
+
+  view.innerHTML = user
+    ? `
+      <p>Signed in as <strong>${user}</strong></p>
+      <button onclick="signOut(); loadHome()">Sign out</button>
+    `
+    : `
+      <input id="u" placeholder="Username">
+      <input id="p" placeholder="Password" type="password">
+      <button onclick="signUp(u.value,p.value);loadHome()">Sign up</button>
+      <button onclick="signIn(u.value,p.value)&&loadHome()">Sign in</button>
+    `;
+}
+
+function goToSymbol(sym) {
   loadSearch();
   setTimeout(() => {
-    document.getElementById("symbol").value = symbol;
+    document.getElementById("symbol").value = sym;
     searchSymbol();
   }, 100);
 }
 
+/* ---------- START ---------- */
 loadHome();
