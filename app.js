@@ -85,7 +85,8 @@ async function searchSymbol() {
 
   result.innerHTML = `
     <p><strong>${symbol}</strong></p>
-    <p>Price: ${price ? `$${price}` : "Not available"}</p>
+    <p>Price: <span id="livePrice">${price ? `$${price}` : "Not available"}</span></p>
+
     ${
       user
         ? `<button onclick="toggleFavorite('${symbol}')">
