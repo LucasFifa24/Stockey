@@ -64,6 +64,43 @@ async function searchSymbol() {
       }
     </div>
   `;
+  const canvas = document.createElement("canvas");
+canvas.id = "priceChart";
+result.appendChild(canvas);
+
+const ctx = canvas.getContext("2d");
+
+getHistoricalData(symbol).then(prices => {
+  const labels = prices.map(p => new Date(p[0]).toLocaleTimeString());
+  const data = prices.map(p => p[1]);
+
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: `${symbol} Price`,
+        data: data,
+        borderColor: "#2563eb",
+        fill: false,
+      }]
+    },
+    options: {
+      scales: {
+        x: {
+          type: "time",
+          time: {
+            unit: "hour"
+          }
+        },
+        y: {
+          beginAtZero: false
+        }
+      }
+    }
+  });
+});
+
 
   clearInterval(priceInterval);
   priceInterval = setInterval(async () => {
