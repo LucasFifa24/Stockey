@@ -5,6 +5,12 @@ const COINS = {
 };
 
 async function getCryptoPrice(symbol) {
+  const COINS = {
+    BTC: "bitcoin",
+    ETH: "ethereum",
+    SOL: "solana"
+  };
+
   const id = COINS[symbol];
   if (!id) return null;
 
@@ -14,6 +20,7 @@ async function getCryptoPrice(symbol) {
   const data = await res.json();
   return data[id].usd;
 }
+
 
 async function getHistoricalData(symbol) {
   const id = COINS[symbol];
