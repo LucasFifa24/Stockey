@@ -44,3 +44,25 @@ function loadSettings() {
 }
 
 loadHome();
+
+function searchSymbol() {
+  const symbol = document.getElementById("symbol").value.toUpperCase();
+  if (!symbol) return;
+
+  const result = document.getElementById("searchResult");
+  const user = getCurrentUser();
+
+  if (user) {
+    const data = getUserData();
+    if (!data.recent.includes(symbol)) {
+      data.recent.unshift(symbol);
+      data.recent = data.recent.slice(0, 10);
+      saveUserData(data);
+    }
+  }
+
+  result.innerHTML = `
+    <p><strong>${symbol}</strong></p>
+    <button onclick="toggleFavorite('${symbol}')">❤️ Favorite</button>
+  `;
+}
