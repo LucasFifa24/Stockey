@@ -130,17 +130,35 @@ async function searchSymbol() {
 
 
   result.innerHTML = `
-    <p><strong>${symbol}</strong></p>
-    <p>Price: <span id="livePrice">${price ? `$${price}` : "Not available"}</span></p>
+result.innerHTML = `
+  <div class="card">
+    <div class="row">
+      <strong>${symbol}</strong>
+      <span class="price">$${price ?? "—"}</span>
+    </div>
+
+    ${
+      ai
+        ? `
+        <p>
+          🤖 AI Bias: <strong>${ai.bias}</strong><br>
+          Confidence: ${ai.confidence}%<br>
+          24h Change: ${ai.change}%
+        </p>
+        `
+        : `<p>AI data unavailable</p>`
+    }
 
     ${
       user
         ? `<button onclick="toggleFavorite('${symbol}')">
             ${isFav ? "💔 Unfavorite" : "❤️ Favorite"}
-           </button>`
-        : `<p>Sign in to favorite</p>`
+          </button>`
+        : ""
     }
-  `;
+  </div>
+`;
+
 }
 
 let priceInterval = null;
