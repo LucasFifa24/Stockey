@@ -1,9 +1,52 @@
 const view = document.getElementById("view");
 
-function loadHome() {
+async function loadHome() {
+  const user = getCurrentUser();
+  let favorites = [];
+
+  if (user) {
+    favorites = getUserData().favorites;
+  }
+
+  const btc = await getCryptoPrice("BTC");
+  const eth = await getCryptoPrice("ETH");
+
   view.innerHTML = `
     <h2>Home</h2>
-    <p>Recommended buys & sells will appear here.</p>
+
+    <div class="section">
+      <h3>🔥 Popular</h3>
+
+      <div class="card row">
+        <span>BTC</span>
+        <span class="price">${btc ? `$${btc}` : "—"}</span>
+      </div>
+
+      <div class="card row">
+        <span>ETH</span>
+        <span class="price">${eth ? `$${eth}` : "—"}</span>
+      </div>
+    </div>
+
+    ${
+      favorites.length > 0
+        ? `
+        <div class="section">
+          <h3>❤️ Your Favorites</h3>
+          ${favorites
+            .map(
+              sym => `
+            <div class="card row">
+              <span>${sym}</span>
+              <button class="secondary" onclick="goToSymbol('${sym}')">View</button>
+            </div>
+          `
+            )
+            .join("")}
+        </div>
+        `
+        : ""
+    }
   `;
 }
 
