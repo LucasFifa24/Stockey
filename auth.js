@@ -46,7 +46,7 @@ function signOut() {
   localStorage.removeItem("currentUser");
 }
 
-// Function to get the user data
+// Function to get user data
 function getUserData() {
   const user = getCurrentUser();
   if (!user) return null;
@@ -56,7 +56,7 @@ function getUserData() {
   return data;
 }
 
-// Function to save the user data
+// Function to save user data
 function saveUserData(data) {
   const user = getCurrentUser();
   if (user) {
