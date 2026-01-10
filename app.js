@@ -98,6 +98,8 @@ async function searchSymbol() {
 }
 
 let priceInterval = null;
+startPriceUpdates(symbol);
+
 
 function startPriceUpdates(symbol) {
   clearInterval(priceInterval);
