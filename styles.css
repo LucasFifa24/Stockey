@@ -1,36 +1,101 @@
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0e1117;
-  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+  background: #0b0f14;
+  color: #e5e7eb;
 }
 
 header {
-  padding: 15px;
+  padding: 16px;
   text-align: center;
   font-size: 22px;
-  background: #111827;
-  font-weight: bold;
+  font-weight: 600;
+  background: #0f172a;
+  border-bottom: 1px solid #1f2937;
 }
 
 main {
-  padding: 15px;
-  min-height: 80vh;
+  padding: 16px;
+  padding-bottom: 90px;
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 20px;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.price {
+  font-weight: 600;
+}
+
+.green {
+  color: #22c55e;
+}
+
+.red {
+  color: #ef4444;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  background: #020617;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  color: white;
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 10px 14px;
+  background: #2563eb;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #1f2937;
 }
 
 .bottom-nav {
   position: fixed;
   bottom: 0;
   width: 100%;
-  background: #111827;
+  background: #020617;
+  border-top: 1px solid #1f2937;
   display: flex;
   justify-content: space-around;
   padding: 10px 0;
 }
 
-button {
+.bottom-nav button {
   background: none;
-  border: none;
-  color: white;
-  font-size: 16px;
+  color: #9ca3af;
+  font-size: 14px;
 }
+
+.bottom-nav button:hover {
+  color: white;
+}
+
