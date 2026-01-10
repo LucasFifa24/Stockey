@@ -96,6 +96,19 @@ async function searchSymbol() {
   `;
 }
 
+let priceInterval = null;
+
+function startPriceUpdates(symbol) {
+  clearInterval(priceInterval);
+  priceInterval = setInterval(() => {
+    getCryptoPrice(symbol).then(price => {
+      const p = document.getElementById("livePrice");
+      if (p && price) p.innerText = `$${price}`;
+    });
+  }, 20000);
+}
+
+
 function toggleFavorite(symbol) {
   const data = getUserData();
 
