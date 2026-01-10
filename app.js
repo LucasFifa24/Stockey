@@ -59,7 +59,7 @@ function loadSettings() {
   }
 }
 
-function searchSymbol() {
+async function searchSymbol() {
   const symbol = document.getElementById("symbol").value.toUpperCase();
   if (!symbol) return;
 
@@ -67,6 +67,7 @@ function searchSymbol() {
   const user = getCurrentUser();
 
   let isFav = false;
+  let price = null;
 
   if (user) {
     const data = getUserData();
@@ -80,8 +81,11 @@ function searchSymbol() {
     isFav = data.favorites.includes(symbol);
   }
 
+  price = await getCryptoPrice(symbol);
+
   result.innerHTML = `
     <p><strong>${symbol}</strong></p>
+    <p>Price: ${price ? `$${price}` : "Not available"}</p>
     ${
       user
         ? `<button onclick="toggleFavorite('${symbol}')">
@@ -92,11 +96,6 @@ function searchSymbol() {
   `;
 }
 
-  result.innerHTML = `
-    <p><strong>${symbol}</strong></p>
-    <button onclick="toggleFavorite('${symbol}')">❤️ Favorite</button>
-  `;
-}
 function toggleFavorite(symbol) {
   const data = getUserData();
 
