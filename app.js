@@ -43,8 +43,6 @@ function loadSettings() {
   }
 }
 
-loadHome();
-
 function searchSymbol() {
   const symbol = document.getElementById("symbol").value.toUpperCase();
   if (!symbol) return;
@@ -66,3 +64,5 @@ function searchSymbol() {
     <button onclick="toggleFavorite('${symbol}')">❤️ Favorite</button>
   `;
 }
+
+loadHome();
