@@ -38,3 +38,13 @@ async function getAIBias(symbol) {
     confidence: Math.abs(change).toFixed(2)
   };
 }
+async function getHistoricalData(symbol) {
+  const id = COINS[symbol];
+  if (!id) return null;
+
+  const res = await fetch(
+    `https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=1`
+  );
+  const data = await res.json();
+  return data.prices; // Returns array of [timestamp, price]
+}
