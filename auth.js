@@ -1,52 +1,32 @@
-const USERS_KEY = "stockey_users";
-const SESSION_KEY = "stockey_session";
-
-function getUsers() {
-  return JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
-}
-
-function saveUsers(users) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+function getCurrentUser() {
+  return localStorage.getItem("currentUser");
 }
 
 function signUp(username, password) {
-  const users = getUsers();
-  if (users[username]) {
-    alert("User already exists");
-    return;
-  }
-  users[username] = { password, favorites: [], recent: [] };
-  saveUsers(users);
-  signIn(username, password);
+  localStorage.setItem(
+    `user_${username}`,
+    JSON.stringify({ password, favorites: [], recent: [] })
+  );
+  localStorage.setItem("currentUser", username);
 }
 
 function signIn(username, password) {
-  const users = getUsers();
-  if (!users[username] || users[username].password !== password) {
-    alert("Invalid login");
-    return;
-  }
-  localStorage.setItem(SESSION_KEY, username);
-  loadHome();
+  const user = JSON.parse(localStorage.getItem(`user_${username}`));
+  if (!user || user.password !== password) return false;
+  localStorage.setItem("currentUser", username);
+  return true;
 }
 
 function signOut() {
-  localStorage.removeItem(SESSION_KEY);
-  loadSettings();
+  localStorage.removeItem("currentUser");
 }
 
-function getCurrentUser() {
-  return localStorage.getItem(SESSION_KEY);
-}
 function getUserData() {
-  const users = getUsers();
   const user = getCurrentUser();
-  return users[user];
+  return JSON.parse(localStorage.getItem(`user_${user}`));
 }
 
 function saveUserData(data) {
-  const users = getUsers();
   const user = getCurrentUser();
-  users[user] = data;
-  saveUsers(users);
+  localStorage.setItem(`user_${user}`, JSON.stringify(data));
 }
