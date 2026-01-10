@@ -126,6 +126,8 @@ async function searchSymbol() {
   }
 
   price = await getCryptoPrice(symbol);
+  const ai = await getAIBias(symbol);
+
 
   result.innerHTML = `
     <p><strong>${symbol}</strong></p>
