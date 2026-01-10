@@ -51,12 +51,13 @@ async function loadHome() {
 }
 
 function loadSearch() {
-  view.innerHTML = `
-    <h2>Search</h2>
-    <input id="symbol" placeholder="Search symbol (AAPL, BTC, EURUSD)">
-    <button onclick="searchSymbol()">Search</button>
-    <div id="searchResult"></div>
-  `;
+view.innerHTML = `
+  <h2>Search</h2>
+  <input id="symbol" placeholder="Search (BTC, ETH, AAPL)">
+  <button onclick="searchSymbol()">Search</button>
+  <div id="searchResult"></div>
+`;
+
 }
 
 function loadFavorites() {
