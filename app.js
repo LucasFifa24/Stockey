@@ -17,9 +17,25 @@ function loadSearch() {
 }
 
 function loadFavorites() {
+  const user = getCurrentUser();
+
+  if (!user) {
+    view.innerHTML = "<p>Please sign in to view favorites.</p>";
+    return;
+  }
+
+  const data = getUserData();
+
+  if (data.favorites.length === 0) {
+    view.innerHTML = "<p>No favorites yet ❤️</p>";
+    return;
+  }
+
   view.innerHTML = `
     <h2>Favorites ❤️</h2>
-    <p>Login to save favorites.</p>
+    ${data.favorites.map(sym =>
+      `<p>${sym}</p>`
+    ).join("")}
   `;
 }
 
