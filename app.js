@@ -8,8 +8,16 @@ async function loadHome() {
     favorites = getUserData().favorites;
   }
 
-  const btc = await getCryptoPrice("BTC");
-  const eth = await getCryptoPrice("ETH");
+<div class="card row">
+  <span>BTC</span>
+  <span class="green">Bullish</span>
+</div>
+
+<div class="card row">
+  <span>ETH</span>
+  <span class="red">Bearish</span>
+</div>
+
 
   view.innerHTML = `
     <h2>Home</h2>
