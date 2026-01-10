@@ -1,11 +1,11 @@
-async function getCryptoPrice(symbol) {
-  const map = {
-    BTC: "bitcoin",
-    ETH: "ethereum",
-    SOL: "solana"
-  };
+const COINS = {
+  BTC: "bitcoin",
+  ETH: "ethereum",
+  SOL: "solana"
+};
 
-  const id = map[symbol];
+async function getCryptoPrice(symbol) {
+  const id = COINS[symbol];
   if (!id) return null;
 
   const res = await fetch(
@@ -14,14 +14,9 @@ async function getCryptoPrice(symbol) {
   const data = await res.json();
   return data[id].usd;
 }
-async function getAIBias(symbol) {
-  const map = {
-    BTC: "bitcoin",
-    ETH: "ethereum",
-    SOL: "solana"
-  };
 
-  const id = map[symbol];
+async function getAIBias(symbol) {
+  const id = COINS[symbol];
   if (!id) return null;
 
   const res = await fetch(
@@ -29,22 +24,17 @@ async function getAIBias(symbol) {
   );
   const data = await res.json();
 
-  const prices = data.prices;
-  const oldPrice = prices[0][1];
-  const currentPrice = prices[prices.length - 1][1];
-
-  const change = ((currentPrice - oldPrice) / oldPrice) * 100;
+  const start = data.prices[0][1];
+  const end = data.prices[data.prices.length - 1][1];
+  const change = ((end - start) / start) * 100;
 
   let bias = "Neutral";
-  let confidence = Math.abs(change).toFixed(2);
-
   if (change > 1) bias = "Bullish 📈";
-  else if (change < -1) bias = "Bearish 📉";
+  if (change < -1) bias = "Bearish 📉";
 
   return {
     bias,
-    confidence,
-    change: change.toFixed(2)
+    change: change.toFixed(2),
+    confidence: Math.abs(change).toFixed(2)
   };
 }
-
