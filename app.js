@@ -66,14 +66,31 @@ function searchSymbol() {
   const result = document.getElementById("searchResult");
   const user = getCurrentUser();
 
+  let isFav = false;
+
   if (user) {
     const data = getUserData();
+
     if (!data.recent.includes(symbol)) {
       data.recent.unshift(symbol);
       data.recent = data.recent.slice(0, 10);
       saveUserData(data);
     }
+
+    isFav = data.favorites.includes(symbol);
   }
+
+  result.innerHTML = `
+    <p><strong>${symbol}</strong></p>
+    ${
+      user
+        ? `<button onclick="toggleFavorite('${symbol}')">
+            ${isFav ? "💔 Unfavorite" : "❤️ Favorite"}
+           </button>`
+        : `<p>Sign in to favorite</p>`
+    }
+  `;
+}
 
   result.innerHTML = `
     <p><strong>${symbol}</strong></p>
