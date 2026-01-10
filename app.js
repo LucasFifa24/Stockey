@@ -167,5 +167,12 @@ function toggleFavorite(symbol) {
   saveUserData(data);
   loadFavorites();
 }
+function goToSymbol(symbol) {
+  loadSearch();
+  setTimeout(() => {
+    document.getElementById("symbol").value = symbol;
+    searchSymbol();
+  }, 100);
+}
 
 loadHome();
