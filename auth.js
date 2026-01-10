@@ -38,3 +38,15 @@ function signOut() {
 function getCurrentUser() {
   return localStorage.getItem(SESSION_KEY);
 }
+function getUserData() {
+  const users = getUsers();
+  const user = getCurrentUser();
+  return users[user];
+}
+
+function saveUserData(data) {
+  const users = getUsers();
+  const user = getCurrentUser();
+  users[user] = data;
+  saveUsers(users);
+}
