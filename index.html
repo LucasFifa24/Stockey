@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <title>Stockey</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body> 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<body>
 
   <!-- NAV -->
   <div class="nav">
@@ -31,14 +34,13 @@
 
   <!-- SEARCH -->
   <div id="search" class="page">
-    <h2>Search</h2>
+    <h2>Search Asset</h2>
 
-    <input id="searchInput" placeholder="AAPL, BTC/USD, EUR/USD..." />
+    <input id="searchInput" placeholder="AAPL, BTC/USD, EUR/USD, SP500" />
     <button onclick="searchAsset()">Search</button>
 
     <div id="result"></div>
     <canvas id="chart"></canvas>
-
   </div>
 
   <script src="data.js"></script>
