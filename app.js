@@ -1,6 +1,6 @@
 const view = document.getElementById("view");
 
-/* ---------------- HOME ---------------- */
+/* ================= HOME ================= */
 
 function loadHome() {
   view.innerHTML = `
@@ -32,7 +32,7 @@ function loadHome() {
   `;
 }
 
-/* ---------------- SEARCH ---------------- */
+/* ================= SEARCH ================= */
 
 function loadSearch() {
   view.innerHTML = `
@@ -45,14 +45,20 @@ function loadSearch() {
 
 async function search() {
   const resultEl = document.getElementById("result");
-  const symbol = document.getElementById("symbolInput").value.trim().toUpperCase();
+  const symbol = document
+    .getElementById("symbolInput")
+    .value
+    .trim()
+    .toUpperCase();
 
   if (!symbol) {
-    resultEl.innerHTML = "Please enter a symbol.";
+    resultEl.innerHTML = `
+      <div class="card">Please enter a symbol</div>
+    `;
     return;
   }
 
-  resultEl.innerHTML = "Loading...";
+  resultEl.innerHTML = `<div class="card">Loading...</div>`;
 
   try {
     const data = await getAsset(symbol);
@@ -75,27 +81,28 @@ async function search() {
       <div class="card">
         <strong>${symbol}</strong>
         <span class="badge ${badgeClass}">${data.signal}</span>
-
-
-  let badgeClass = "";
-  if (data.signal === "BUY") badgeClass = "buy";
-  if (data.signal === "SELL") badgeClass = "sell";
-
-  document.getElementById("result").innerHTML = `
-    <div class="card">
-      <strong>${symbol}</strong>
-      <span class="badge ${badgeClass}">${data.signal}</span>
-      <p>Price: $${data.price}</p>
-      <p>Change: ${data.change.toFixed(2)}%</p>
-      <button class="action" onclick="addFavorite('${symbol}')">❤️ Favorite</button>
-    </div>
-  `;
+        <p>Price: $${data.price}</p>
+        <p>Change: ${data.change.toFixed(2)}%</p>
+        <button class="action" onclick="addFavorite('${symbol}')">
+          ❤️ Favorite
+        </button>
+      </div>
+    `;
+  } catch (err) {
+    resultEl.innerHTML = `
+      <div class="card">
+        ⚠️ Data unavailable<br><br>
+        <small>Check your spelling or try again later</small>
+      </div>
+    `;
+  }
 }
 
-/* ---------------- FAVORITES ---------------- */
+/* ================= FAVORITES ================= */
 
 function addFavorite(symbol) {
   const data = getUserData();
+
   if (!data) {
     alert("Sign in first");
     return;
@@ -112,28 +119,42 @@ function loadFavorites() {
   const data = getUserData();
 
   if (!data || data.favorites.length === 0) {
-    view.innerHTML = "<p>No favorites yet</p>";
+    view.innerHTML = `
+      <div class="card">No favorites yet</div>
+    `;
     return;
   }
 
   view.innerHTML =
     "<h2 class='section-title'>Favorites</h2>" +
-    data.favorites.map(s => `<div class="card">${s}</div>`).join("");
+    data.favorites
+      .map(sym => `<div class="card">${sym}</div>`)
+      .join("");
 }
 
-/* ---------------- SETTINGS ---------------- */
+/* ================= SETTINGS ================= */
 
 function loadSettings() {
   view.innerHTML = `
     <h2 class="section-title">Account</h2>
+
     <input id="user" placeholder="Username" />
     <input id="pass" type="password" placeholder="Password" />
-    <button class="action" onclick="signUp(user.value, pass.value)">Sign Up</button>
-    <button class="action" onclick="signIn(user.value, pass.value)">Sign In</button>
-    <button class="action" onclick="signOut()">Sign Out</button>
+
+    <button class="action" onclick="signUp(user.value, pass.value)">
+      Sign Up
+    </button>
+
+    <button class="action" onclick="signIn(user.value, pass.value)">
+      Sign In
+    </button>
+
+    <button class="action" onclick="signOut()">
+      Sign Out
+    </button>
   `;
 }
 
-/* ---------------- INIT ---------------- */
+/* ================= INIT ================= */
 
 loadHome();
