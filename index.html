@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Stockey</title>
-
-  <!-- C hart.js -->
+  
+  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <!-- NAV -->
+  <!-- Navigation -->
   <div class="nav">
     <button onclick="showPage('home')">Home</button>
     <button onclick="showPage('search')">Search</button>
+    <button onclick="showPage('favorites')">Favorites</button>
   </div>
 
-  <!-- HOME -->
+  <!-- Home Page -->
   <div id="home" class="page active">
     <h1 class="title">Stockey</h1>
 
@@ -32,17 +33,31 @@
     </div>
   </div>
 
-  <!-- SEARCH -->
+  <!-- Search Page -->
   <div id="search" class="page">
     <h2>Search Asset</h2>
 
-    <input id="searchInput" placeholder="AAPL, BTC/USD, EUR/USD, SP500" />
+    <input id="searchInput" placeholder="AAPL, BTC/USD, SP500, EUR/USD" />
     <button onclick="searchAsset()">Search</button>
+
+    <div class="section">
+      <h3>Timeframe</h3>
+      <button onclick="changeTimeframe('1d')">1D</button>
+      <button onclick="changeTimeframe('1w')">1W</button>
+      <button onclick="changeTimeframe('1m')">1M</button>
+    </div>
 
     <div id="result"></div>
     <canvas id="chart"></canvas>
   </div>
 
+  <!-- Favorites Page -->
+  <div id="favorites" class="page">
+    <h2>Favorites</h2>
+    <div id="favoritesList"></div>
+  </div>
+
+  <!-- Scripts -->
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
