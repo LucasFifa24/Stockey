@@ -1,22 +1,22 @@
 const API_KEY = "77ff81accb7449078076fa13c52a3c32";
 
-/* INDEX SYMBOL MAP */
+// Index symbol mapping
 const INDEX_MAP = {
+  "SP500": "SPX",
   "NASDAQ": "NDX",
   "DOW": "DJI",
-  "SP500": "SPX",
   "VIX": "VIX"
 };
 
-/* AI SIGNAL */
+// AI signal logic
 function getSignal(change) {
   if (change > 1) return "BUY";
   if (change < -1) return "SELL";
   return "HOLD";
 }
 
-/* MAIN FETCH */
-async function getAsset(symbol) {
+// Fetch asset data
+async function getAsset(symbol, timeframe) {
   symbol = symbol.toUpperCase().replace(/\s+/g, "");
 
   if (INDEX_MAP[symbol]) {
@@ -28,7 +28,7 @@ async function getAsset(symbol) {
   const data = await res.json();
 
   if (data.status === "error" || !data.close) {
-    return { error: "Check your spelling" };
+    return { error: true };
   }
 
   const open = parseFloat(data.open);
@@ -40,4 +40,18 @@ async function getAsset(symbol) {
     change,
     signal: getSignal(change)
   };
+}
+
+// Fetch time series data for chart
+async function getTimeSeries(symbol, interval) {
+  const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${interval}&apikey=${API_KEY}`;
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (!data.values) return null;
+
+  const labels = data.values.map(v => v.datetime).reverse();
+  const prices = data.values.map(v => parseFloat(v.close)).reverse();
+
+  return { labels, prices };
 }
