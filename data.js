@@ -28,13 +28,13 @@ async function getCryptoData(symbol) {
 async function getStooqData(symbol) {
   let s = symbol.toLowerCase();
 
-  // Add US suffix if missing (AAPL -> aapl.us)
   if (!s.includes(".") && /^[a-z]+$/i.test(s)) {
     s += ".us";
   }
 
-  const url = `https://stooq.com/q/l/?s=${s}&f=sd2t2ohlcv&h&e=json`;
-  const res = await fetch(url);
+  const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+  const apiUrl = `https://stooq.com/q/l/?s=${s}&f=sd2t2ohlcv&h&e=json`;
+  const res = await fetch(proxyUrl + apiUrl);
   const json = await res.json();
   const data = json.data[0];
 
@@ -49,6 +49,7 @@ async function getStooqData(symbol) {
     change: change
   };
 }
+
 
 /* ========== AI SIGNAL ========== */
 
