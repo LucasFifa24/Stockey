@@ -35,6 +35,14 @@ async function getMarketData(symbol) {
   const price = data.last.price;
   const change = data.last.percent_change;
 
+  // Check if the market is open (Polygon does not directly provide market status, so we assume if there’s no data, the market is closed)
+  if (!data.last) {
+    return {
+      price: "Market closed",
+      change: null
+    };
+  }
+
   return {
     price: price,
     change: change
@@ -67,9 +75,10 @@ async function getAsset(symbol) {
   const d = await getMarketData(symbol);
   if (!d) return null;
 
+  // If the market is closed, we can show the last price or a message
   return {
-    price: d.price,
+    price: d.price === "Market closed" ? "Market closed" : d.price,
     change: d.change,
-    signal: getSignal(d.change)
+    signal: d.change !== null ? getSignal(d.change) : null
   };
 }
