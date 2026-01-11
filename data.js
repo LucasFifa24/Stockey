@@ -1,4 +1,6 @@
+// data.js
 
+/* ========== CRYPTO (CoinGecko) ========== */
 
 const CRYPTO = {
   BTC: "bitcoin",
@@ -6,7 +8,7 @@ const CRYPTO = {
   SOL: "solana"
 };
 
-async function getCryptoPrice(symbol) {
+async function getCryptoData(symbol) {
   const id = CRYPTO[symbol];
   if (!id) return null;
 
@@ -21,32 +23,50 @@ async function getCryptoPrice(symbol) {
   };
 }
 
-async function getMarketData(symbol) {
-  const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`;
+/* ========== STOCKS / FOREX / INDICES (STOOQ) ========== */
+
+async function getStooqData(symbol) {
+  let s = symbol.toLowerCase();
+
+  // Add US suffix if missing (AAPL -> aapl.us)
+  if (!s.includes(".") && /^[a-z]+$/i.test(s)) {
+    s += ".us";
+  }
+
+  const url = `https://stooq.com/q/l/?s=${s}&f=sd2t2ohlcv&h&e=json`;
   const res = await fetch(url);
-  const data = await res.json();
-  const q = data.quoteResponse.result[0];
-  if (!q) return null;
+  const json = await res.json();
+  const data = json.data[0];
+
+  if (!data || data.close === null) return null;
+
+  const open = parseFloat(data.open);
+  const close = parseFloat(data.close);
+  const change = ((close - open) / open) * 100;
 
   return {
-    price: q.regularMarketPrice,
-    change: q.regularMarketChangePercent
+    price: close,
+    change: change
   };
 }
 
-// --- AI SIGNAL ---
+/* ========== AI SIGNAL ========== */
+
 function getSignal(change) {
-  if (change > 1.5) return "BUY";
-  if (change < -1.5) return "SELL";
+  if (change > 1.2) return "BUY";
+  if (change < -1.2) return "SELL";
   return "HOLD";
 }
 
-// --- UNIVERSAL ---
+/* ========== UNIVERSAL FETCH ========== */
+
 async function getAsset(symbol) {
   symbol = symbol.toUpperCase();
 
+  // Crypto
   if (CRYPTO[symbol]) {
-    const d = await getCryptoPrice(symbol);
+    const d = await getCryptoData(symbol);
+    if (!d) return null;
     return {
       price: d.price,
       change: d.change,
@@ -54,7 +74,10 @@ async function getAsset(symbol) {
     };
   }
 
-  const d = await getMarketData(symbol);
+  // Stocks / Forex / Indices
+  const d = await getStooqData(symbol);
+  if (!d) return null;
+
   return {
     price: d.price,
     change: d.change,
