@@ -54,7 +54,17 @@ input {
   justify-content: space-between;
 }
 
+
+canvas {
+  margin-top: 20px;
+  background: #0e1117;
+}
+
 .buy { color: #00ff9c; }
 .sell { color: #ff4d4d; }
 .hold { color: #ffaa00; }
 .error { color: #ff4d4d; }
+
+
+
+
