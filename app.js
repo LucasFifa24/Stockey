@@ -42,7 +42,7 @@ function loadSearch() {
 
 async function search() {
   const symbol = document.getElementById("symbolInput").value.toUpperCase();
-  const price = await getCryptoPrice(symbol);
+  const price = await getPrice(symbol);
   if (!price) {
     document.getElementById("result").innerHTML = "Symbol not found";
     return;
