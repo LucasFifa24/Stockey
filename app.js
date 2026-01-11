@@ -1,12 +1,13 @@
 let chart;
+let currentTimeframe = '1d';
 
-/* PAGE NAV */
+// Page navigation
 function showPage(id) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
 
-/* LOAD HOME */
+// Load home page data
 async function loadHome() {
   const trendingSymbols = ["AAPL", "BTC/USD", "SP500"];
   const aiSymbols = ["TSLA", "ETH/USD"];
@@ -19,7 +20,7 @@ async function loadHome() {
 
   for (const s of trendingSymbols) {
     const d = await getAsset(s);
-    if (!d || d.error) continue;
+    if (d.error) continue;
 
     trending.innerHTML += `
       <div class="card">
@@ -31,7 +32,7 @@ async function loadHome() {
 
   for (const s of aiSymbols) {
     const d = await getAsset(s);
-    if (!d || d.error) continue;
+    if (d.error) continue;
 
     aiPicks.innerHTML += `
       <div class="card">
@@ -42,14 +43,14 @@ async function loadHome() {
   }
 }
 
-/* SEARCH + CHART */
+// Search and display asset data
 async function searchAsset() {
   const symbol = document.getElementById("searchInput").value.trim();
   const result = document.getElementById("result");
 
   result.innerHTML = "Loading...";
 
-  const d = await getAsset(symbol);
+  const d = await getAsset(symbol, currentTimeframe);
 
   if (!d || d.error) {
     result.innerHTML = `<p class="error">Check your spelling</p>`;
@@ -68,18 +69,14 @@ async function searchAsset() {
   loadChart(symbol);
 }
 
-/* LOAD CHART */
+// Load chart for the searched asset
 async function loadChart(symbol) {
-  symbol = symbol.toUpperCase();
+  const interval = getInterval(currentTimeframe);
+  const timeSeries = await getTimeSeries(symbol, interval);
 
-  const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=5min&apikey=77ff81accb7449078076fa13c52a3c32`;
-  const res = await fetch(url);
-  const data = await res.json();
+  if (!timeSeries) return;
 
-  if (!data.values) return;
-
-  const labels = data.values.map(v => v.datetime).reverse();
-  const prices = data.values.map(v => parseFloat(v.close)).reverse();
+  const { labels, prices } = timeSeries;
 
   const ctx = document.getElementById("chart").getContext("2d");
 
@@ -97,10 +94,62 @@ async function loadChart(symbol) {
     },
     options: {
       responsive: true,
-      plugins: { legend: { display: false } },
-      scales: { x: { display: false } }
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: { display: false }
+      }
     }
   });
 }
 
+// Change timeframe and reload chart
+function changeTimeframe(timeframe) {
+  currentTimeframe = timeframe;
+  const symbol = document.getElementById("searchInput").value.trim();
+  if (symbol) {
+    loadChart(symbol);
+  }
+}
+
+// Map timeframe to interval
+function getInterval(timeframe) {
+  switch (timeframe) {
+    case '1d': return '1min';
+    case '1w': return '5min';
+    case '1m': return '15min';
+    default: return '1min';
+  }
+}
+
+// Save and load favorites
+function addToFavorites(symbol) {
+  let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+  if (!favorites.includes(symbol)) {
+    favorites.push(symbol);
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }
+  loadFavorites();
+}
+
+function loadFavorites() {
+  const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+  const favoritesList = document.getElementById("favoritesList");
+  favoritesList.innerHTML = '';
+
+  for (const symbol of favorites) {
+    favoritesList.innerHTML += `<div class="card">${symbol} <button onclick="removeFromFavorites('${symbol}')">Remove</button></div>`;
+  }
+}
+
+function removeFromFavorites(symbol) {
+  let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+  favorites = favorites.filter(item => item !== symbol);
+  localStorage.setItem('favorites', JSON.stringify(favorites));
+  loadFavorites();
+}
+
+// Initialize home page on load
 loadHome();
+loadFavorites();
