@@ -1,6 +1,6 @@
 const API_KEY = "77ff81accb7449078076fa13c52a3c32";
 
-/* INDEX NAME MAPPING */
+/* INDEX NAME MAPP ING */
 const INDEX_MAP = {
   "NASDAQ": "NDX",
   "DOW": "DJI",
