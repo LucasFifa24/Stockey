@@ -1,4 +1,4 @@
-// data.js
+
 
 const CRYPTO = {
   BTC: "bitcoin",
