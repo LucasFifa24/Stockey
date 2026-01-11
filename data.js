@@ -1,6 +1,11 @@
+// data.js — FINAL, STABLE VERSION (Polygon Free + CoinGecko)
+
 const API_KEY = "1bf7c3ac-16ce-458a-a3a8-4f8431d69969";
 
-// --- CRYPTO (CoinGecko) ---
+/* =======================
+   CRYPTO (CoinGecko)
+======================= */
+
 const CRYPTO = {
   BTC: "bitcoin",
   ETH: "ethereum",
@@ -22,45 +27,46 @@ async function getCryptoData(symbol) {
   };
 }
 
-// --- STOCKS / FOREX (Polygon) ---
-async function getMarketData(symbol) {
-  let s = symbol.toUpperCase();
+/* =======================
+   STOCKS (Polygon FREE)
+   Uses PREVIOUS CLOSE
+======================= */
 
-  // Ensure stock symbols have .US suffix
-  if (!s.includes(".") && /^[A-Z]+$/.test(s)) {
-    s += ".US";
-  }
+async function getStockData(symbol) {
+  const s = symbol.toUpperCase();
 
-  const url = `https://api.polygon.io/v1/last/trade/${s}?apiKey=${API_KEY}`;
+  const url = `https://api.polygon.io/v2/aggs/ticker/${s}/prev?adjusted=true&apiKey=${API_KEY}`;
   const res = await fetch(url);
-  const data = await res.json();
+  const json = await res.json();
 
-  if (!data || !data.last) {
-    // If no data is available (e.g., market closed), return a message or a null value
-    return {
-      price: null,
-      change: null,
-      message: "Market closed or data unavailable"
-    };
-  }
+  if (!json.results || json.results.length === 0) return null;
 
-  const price = data.last.price;
-  const change = data.last.percent_change;
+  const data = json.results[0];
+
+  const open = data.o;
+  const close = data.c;
+  const change = ((close - open) / open) * 100;
 
   return {
-    price: price,
+    price: close,
     change: change
   };
 }
 
-// --- AI SIGNAL ---
+/* =======================
+   AI SIGNAL
+======================= */
+
 function getSignal(change) {
-  if (change > 1.2) return "BUY";
-  if (change < -1.2) return "SELL";
+  if (change > 1) return "BUY";
+  if (change < -1) return "SELL";
   return "HOLD";
 }
 
-// --- UNIVERSAL FETCH ---
+/* =======================
+   UNIVERSAL FETCH
+======================= */
+
 async function getAsset(symbol) {
   symbol = symbol.toUpperCase();
 
@@ -68,22 +74,21 @@ async function getAsset(symbol) {
   if (CRYPTO[symbol]) {
     const d = await getCryptoData(symbol);
     if (!d) return null;
+
     return {
       price: d.price,
       change: d.change,
-      signal: getSignal(d.change),
-      message: d.message || ""
+      signal: getSignal(d.change)
     };
   }
 
-  // Stocks / Forex
-  const d = await getMarketData(symbol);
+  // Stocks
+  const d = await getStockData(symbol);
   if (!d) return null;
 
   return {
     price: d.price,
     change: d.change,
-    signal: getSignal(d.change),
-    message: d.message || ""
+    signal: getSignal(d.change)
   };
 }
