@@ -39,14 +39,30 @@ function loadSearch() {
     <div id="result"></div>
   `;
 }
-
 async function search() {
   const symbol = document.getElementById("symbolInput").value.toUpperCase();
-  const price = await getPrice(symbol);
-  if (!price) {
+  const data = await getAsset(symbol);
+
+  if (!data || !data.price) {
     document.getElementById("result").innerHTML = "Symbol not found";
     return;
   }
+
+  const color =
+    data.signal === "BUY" ? "buy" :
+    data.signal === "SELL" ? "sell" : "";
+
+  document.getElementById("result").innerHTML = `
+    <div class="card">
+      <strong>${symbol}</strong>
+      <span class="badge ${color}">${data.signal}</span>
+      <p>Price: $${data.price}</p>
+      <p>24h Change: ${data.change.toFixed(2)}%</p>
+      <button class="action" onclick="addFavorite('${symbol}')">❤️ Favorite</button>
+    </div>
+  `;
+}
+
 
   document.getElementById("result").innerHTML = `
     <div class="card">
