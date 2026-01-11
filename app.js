@@ -144,9 +144,9 @@ function loadFavorites() {
 
   for (const symbol of favorites) {
     favoritesList.innerHTML += `
-      <div class="card">
+      <div class="card" onclick="loadFavoriteAsset('${symbol}')">
         ${symbol}
-        <button onclick="removeFromFavorites('${symbol}')">Remove</button>
+        <button onclick="removeFromFavorites('${symbol}'); event.stopPropagation();">Remove</button>
       </div>
     `;
   }
@@ -158,6 +158,13 @@ function removeFromFavorites(symbol) {
   favorites = favorites.filter(item => item !== symbol);
   localStorage.setItem('favorites', JSON.stringify(favorites));
   loadFavorites();
+}
+
+// Load favorite asset details
+async function loadFavoriteAsset(symbol) {
+  document.getElementById("searchInput").value = symbol;
+  await searchAsset();
+  showPage('search');
 }
 
 // Initialize home page on load
