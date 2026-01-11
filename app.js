@@ -1,175 +1,75 @@
 const view = document.getElementById("view");
-let priceInterval = null;
 
-/* ---------- HOME ---------- */
-async function loadHome() {
-  const btc = await getCryptoPrice("BTC");
-  const eth = await getCryptoPrice("ETH");
-
+function loadHome() {
   view.innerHTML = `
-    <h2>Home</h2>
-
-    <div class="section">
-      <div class="card row"><span>BTC</span><span>$${btc ?? "—"}</span></div>
-      <div class="card row"><span>ETH</span><span>$${eth ?? "—"}</span></div>
-    </div>
+    <h2>Market Picks</h2>
+    <div class="card">BTC – Strong Momentum</div>
+    <div class="card">ETH – Bullish Trend</div>
+    <div class="card">SOL – High Volume</div>
   `;
 }
 
-/* ---------- SEARCH ---------- */
 function loadSearch() {
   view.innerHTML = `
     <h2>Search</h2>
-    <input id="symbol" placeholder="BTC, ETH, SOL" />
-    <button onclick="searchSymbol()">Search</button>
-    <div id="searchResult"></div>
+    <input id="symbolInput" placeholder="BTC, ETH, SOL" />
+    <button class="action" onclick="search()">Search</button>
+    <div id="result"></div>
   `;
 }
 
-async function searchSymbol() {
-  const symbol = document.getElementById("symbol").value.toUpperCase();
-  if (!symbol) return;
-
-  const result = document.getElementById("searchResult");
+async function search() {
+  const symbol = document.getElementById("symbolInput").value.toUpperCase();
   const price = await getCryptoPrice(symbol);
-
-  let ai = null;
-  try {
-    ai = await getAIBias(symbol);
-  } catch {}
-
-  const user = getCurrentUser();
-  let isFav = false;
-
-  if (user) {
-    const data = getUserData();
-    isFav = data.favorites.includes(symbol);
-  }
-
-  result.innerHTML = `
-    <div class="card">
-      <strong>${symbol}</strong>
-      <p>Price: <span id="livePrice">$${price ?? "—"}</span></p>
-      ${
-        ai
-          ? `<p>🤖 ${ai.bias}<br>Change: ${ai.change}%</p>`
-          : ""
-      }
-      ${
-        user
-          ? `<button onclick="toggleFavorite('${symbol}')">
-              ${isFav ? "💔 Unfavorite" : "❤️ Favorite"}
-            </button>`
-          : `<p>Sign in to favorite</p>`
-      }
-    </div>
-  `;
-  const canvas = document.createElement("canvas");
-canvas.id = "priceChart";
-result.appendChild(canvas);
-
-const ctx = canvas.getContext("2d");
-
-getHistoricalData(symbol).then(prices => {
-  const labels = prices.map(p => new Date(p[0]).toLocaleTimeString());
-  const data = prices.map(p => p[1]);
-
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: labels,
-      datasets: [{
-        label: `${symbol} Price`,
-        data: data,
-        borderColor: "#2563eb",
-        fill: false,
-      }]
-    },
-    options: {
-      scales: {
-        x: {
-          type: "time",
-          time: {
-            unit: "hour"
-          }
-        },
-        y: {
-          beginAtZero: false
-        }
-      }
-    }
-  });
-});
-
-
-  clearInterval(priceInterval);
-  priceInterval = setInterval(async () => {
-    const p = await getCryptoPrice(symbol);
-    const el = document.getElementById("livePrice");
-    if (el && p) el.innerText = `$${p}`;
-  }, 20000);
-}
-
-/* ---------- FAVORITES ---------- */
-function toggleFavorite(symbol) {
-  const data = getUserData();
-  if (data.favorites.includes(symbol)) {
-    data.favorites = data.favorites.filter(s => s !== symbol);
-  } else {
-    data.favorites.push(symbol);
-  }
-  saveUserData(data);
-  searchSymbol();
-}
-
-function loadFavorites() {
-  const user = getCurrentUser();
-  if (!user) {
-    view.innerHTML = "<p>Please sign in.</p>";
+  if (!price) {
+    document.getElementById("result").innerHTML = "Symbol not found";
     return;
   }
 
-  const favs = getUserData().favorites;
-
-  view.innerHTML = `
-    <h2>Favorites</h2>
-    ${
-      favs.length === 0
-        ? "<p>No favorites yet.</p>"
-        : favs.map(f => `
-            <div class="card row">
-              <span>${f}</span>
-              <button class="secondary" onclick="goToSymbol('${f}')">View</button>
-            </div>
-          `).join("")
-    }
+  document.getElementById("result").innerHTML = `
+    <div class="card">
+      <strong>${symbol}</strong>
+      <p>Price: $${price}</p>
+      <button class="action" onclick="addFavorite('${symbol}')">❤️ Favorite</button>
+    </div>
   `;
 }
 
-/* ---------- SETTINGS ---------- */
+function addFavorite(symbol) {
+  const data = getUserData();
+  if (!data) {
+    alert("Sign in first");
+    return;
+  }
+  if (!data.favorites.includes(symbol)) {
+    data.favorites.push(symbol);
+    saveUserData(data);
+    alert("Added to favorites");
+  }
+}
+
+function loadFavorites() {
+  const data = getUserData();
+  if (!data || data.favorites.length === 0) {
+    view.innerHTML = "<p>No favorites yet</p>";
+    return;
+  }
+
+  view.innerHTML =
+    "<h2>Favorites</h2>" +
+    data.favorites.map(s => `<div class="card">${s}</div>`).join("");
+}
+
 function loadSettings() {
-  const user = getCurrentUser();
-
-  view.innerHTML = user
-    ? `
-      <p>Signed in as <strong>${user}</strong></p>
-      <button onclick="signOut(); loadHome()">Sign out</button>
-    `
-    : `
-      <input id="u" placeholder="Username">
-      <input id="p" placeholder="Password" type="password">
-      <button onclick="signUp(u.value,p.value);loadHome()">Sign up</button>
-      <button onclick="signIn(u.value,p.value)&&loadHome()">Sign in</button>
-    `;
+  view.innerHTML = `
+    <h2>Account</h2>
+    <input id="user" placeholder="Username" />
+    <input id="pass" placeholder="Password" type="password" />
+    <button class="action" onclick="signUp(user.value, pass.value)">Sign Up</button>
+    <button class="action" onclick="signIn(user.value, pass.value)">Sign In</button>
+    <button class="action" onclick="signOut()">Sign Out</button>
+  `;
 }
 
-function goToSymbol(sym) {
-  loadSearch();
-  setTimeout(() => {
-    document.getElementById("symbol").value = sym;
-    searchSymbol();
-  }, 100);
-}
-
-/* ---------- START ---------- */
+// load app
 loadHome();
