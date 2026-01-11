@@ -26,6 +26,7 @@ async function loadHome() {
       <div class="card">
         <span>${s}</span>
         <span class="${d.signal.toLowerCase()}">${d.signal}</span>
+        <button onclick="addToFavorites('${s}')">❤️</button>
       </div>
     `;
   }
@@ -38,6 +39,7 @@ async function loadHome() {
       <div class="card">
         <span>${s}</span>
         <span class="${d.signal.toLowerCase()}">${d.signal}</span>
+        <button onclick="addToFavorites('${s}')">❤️</button>
       </div>
     `;
   }
@@ -61,6 +63,7 @@ async function searchAsset() {
     <div class="card">
       <span>${symbol.toUpperCase()}</span>
       <span class="${d.signal.toLowerCase()}">${d.signal}</span>
+      <button onclick="addToFavorites('${symbol.toUpperCase()}')">❤️</button>
     </div>
     <p>Price: $${d.price.toFixed(2)}</p>
     <p>Change: ${d.change.toFixed(2)}%</p>
@@ -123,7 +126,7 @@ function getInterval(timeframe) {
   }
 }
 
-// Save and load favorites
+// Save asset to favorites
 function addToFavorites(symbol) {
   let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
   if (!favorites.includes(symbol)) {
@@ -133,16 +136,23 @@ function addToFavorites(symbol) {
   loadFavorites();
 }
 
+// Load favorites from local storage
 function loadFavorites() {
   const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
   const favoritesList = document.getElementById("favoritesList");
   favoritesList.innerHTML = '';
 
   for (const symbol of favorites) {
-    favoritesList.innerHTML += `<div class="card">${symbol} <button onclick="removeFromFavorites('${symbol}')">Remove</button></div>`;
+    favoritesList.innerHTML += `
+      <div class="card">
+        ${symbol}
+        <button onclick="removeFromFavorites('${symbol}')">Remove</button>
+      </div>
+    `;
   }
 }
 
+// Remove asset from favorites
 function removeFromFavorites(symbol) {
   let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
   favorites = favorites.filter(item => item !== symbol);
