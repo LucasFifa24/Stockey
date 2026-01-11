@@ -1,7 +1,8 @@
 // data.js
 
-/* ========== CRYPTO (CoinGecko) ========== */
+const API_KEY = "1bf7c3ac-16ce-458a-a3a8-4f8431d69969";
 
+// --- CRYPTO (CoinGecko) ---
 const CRYPTO = {
   BTC: "bitcoin",
   ETH: "ethereum",
@@ -23,44 +24,31 @@ async function getCryptoData(symbol) {
   };
 }
 
-/* ========== STOCKS / FOREX / INDICES (STOOQ) ========== */
+// --- STOCKS / FOREX (Polygon) ---
+async function getMarketData(symbol) {
+  const url = `https://api.polygon.io/v1/last/trade/${symbol}?apiKey=${API_KEY}`;
+  const res = await fetch(url);
+  const data = await res.json();
 
-async function getStooqData(symbol) {
-  let s = symbol.toLowerCase();
+  if (!data || !data.last) return null;
 
-  if (!s.includes(".") && /^[a-z]+$/i.test(s)) {
-    s += ".us";
-  }
-
-  const proxyUrl = "https://cors-anywhere.herokuapp.com/";
-  const apiUrl = `https://stooq.com/q/l/?s=${s}&f=sd2t2ohlcv&h&e=json`;
-  const res = await fetch(proxyUrl + apiUrl);
-  const json = await res.json();
-  const data = json.data[0];
-
-  if (!data || data.close === null) return null;
-
-  const open = parseFloat(data.open);
-  const close = parseFloat(data.close);
-  const change = ((close - open) / open) * 100;
+  const price = data.last.price;
+  const change = data.last.percent_change;
 
   return {
-    price: close,
+    price: price,
     change: change
   };
 }
 
-
-/* ========== AI SIGNAL ========== */
-
+// --- AI SIGNAL ---
 function getSignal(change) {
   if (change > 1.2) return "BUY";
   if (change < -1.2) return "SELL";
   return "HOLD";
 }
 
-/* ========== UNIVERSAL FETCH ========== */
-
+// --- UNIVERSAL FETCH ---
 async function getAsset(symbol) {
   symbol = symbol.toUpperCase();
 
@@ -75,8 +63,8 @@ async function getAsset(symbol) {
     };
   }
 
-  // Stocks / Forex / Indices
-  const d = await getStooqData(symbol);
+  // Stocks / Forex
+  const d = await getMarketData(symbol);
   if (!d) return null;
 
   return {
