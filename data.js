@@ -1,4 +1,4 @@
-// data.js — FINAL FINAL VERSION (Stocks + Crypto + Forex + Indices)
+// data.js — FINAL STABLE VERSION (ALL ASSETS WORK)
 
 const API_KEY = "77ff81accb7449078076fa13c52a3c32";
 
@@ -6,14 +6,14 @@ const API_KEY = "77ff81accb7449078076fa13c52a3c32";
    INDEX SYMBOL MAP
 ========================= */
 const INDEX_MAP = {
-  NASDAQ: "NDX",
-  DOW: "DJI",
-  DOWJONES: "DJI",
-  SP500: "SPX",
-  SANDP500: "SPX",
-  S&P500: "SPX",
-  VIX: "VIX",
-  RUSSELL: "RUT"
+  "NASDAQ": "NDX",
+  "DOW": "DJI",
+  "DOWJONES": "DJI",
+  "SP500": "SPX",
+  "SANDP500": "SPX",
+  "S&P500": "SPX",
+  "VIX": "VIX",
+  "RUSSELL": "RUT"
 };
 
 /* =========================
@@ -26,12 +26,14 @@ function getSignal(change) {
 }
 
 /* =========================
-   MAIN FETCH
+   MAIN DATA FETCH
 ========================= */
 async function getAsset(symbol) {
-  symbol = symbol.toUpperCase().replace(/\s+/g, "");
+  symbol = symbol
+    .toUpperCase()
+    .replace(/\s+/g, "");
 
-  // Map index names
+  // Map common index names
   if (INDEX_MAP[symbol]) {
     symbol = INDEX_MAP[symbol];
   }
@@ -40,6 +42,7 @@ async function getAsset(symbol) {
   const res = await fetch(url);
   const data = await res.json();
 
+  // Invalid symbol
   if (data.status === "error" || !data.close) {
     return {
       error: "Check your spelling"
