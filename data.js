@@ -1,6 +1,5 @@
 // data.js
 
-// --- CRYPTO (CoinGecko) ---
 const CRYPTO = {
   BTC: "bitcoin",
   ETH: "ethereum",
@@ -12,33 +11,53 @@ async function getCryptoPrice(symbol) {
   if (!id) return null;
 
   const res = await fetch(
-    `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`
+    `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd&include_24hr_change=true`
   );
   const data = await res.json();
-  return data[id].usd;
+
+  return {
+    price: data[id].usd,
+    change: data[id].usd_24h_change
+  };
 }
 
-// --- STOCKS / FOREX / INDICES (Yahoo Finance) ---
-async function getMarketPrice(symbol) {
+async function getMarketData(symbol) {
   const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`;
   const res = await fetch(url);
   const data = await res.json();
+  const q = data.quoteResponse.result[0];
+  if (!q) return null;
 
-  const quote = data.quoteResponse.result[0];
-  if (!quote || !quote.regularMarketPrice) return null;
+  return {
+    price: q.regularMarketPrice,
+    change: q.regularMarketChangePercent
+  };
+}
 
-  return quote.regularMarketPrice;
+// --- AI SIGNAL ---
+function getSignal(change) {
+  if (change > 1.5) return "BUY";
+  if (change < -1.5) return "SELL";
+  return "HOLD";
 }
 
 // --- UNIVERSAL ---
-async function getPrice(symbol) {
+async function getAsset(symbol) {
   symbol = symbol.toUpperCase();
 
-  // Crypto first
   if (CRYPTO[symbol]) {
-    return await getCryptoPrice(symbol);
+    const d = await getCryptoPrice(symbol);
+    return {
+      price: d.price,
+      change: d.change,
+      signal: getSignal(d.change)
+    };
   }
 
-  // Stocks / Forex / Indices
-  return await getMarketPrice(symbol);
+  const d = await getMarketData(symbol);
+  return {
+    price: d.price,
+    change: d.change,
+    signal: getSignal(d.change)
+  };
 }
