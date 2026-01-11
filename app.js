@@ -2,12 +2,34 @@ const view = document.getElementById("view");
 
 function loadHome() {
   view.innerHTML = `
-    <h2>Market Picks</h2>
-    <div class="card">BTC – Strong Momentum</div>
-    <div class="card">ETH – Bullish Trend</div>
-    <div class="card">SOL – High Volume</div>
+    <h2 class="section-title">Trending</h2>
+
+    <div class="card">
+      <strong>BTC</strong>
+      <span class="badge buy">BUY</span>
+      <p class="muted">Strong momentum</p>
+    </div>
+
+    <div class="card">
+      <strong>ETH</strong>
+      <span class="badge buy">BUY</span>
+      <p class="muted">Bullish continuation</p>
+    </div>
+
+    <div class="card">
+      <strong>SOL</strong>
+      <span class="badge sell">SELL</span>
+      <p class="muted">Overextended</p>
+    </div>
+
+    <h2 class="section-title">Popular</h2>
+
+    <div class="card">AAPL</div>
+    <div class="card">TSLA</div>
+    <div class="card">SPY</div>
   `;
 }
+
 
 function loadSearch() {
   view.innerHTML = `
