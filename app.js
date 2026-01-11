@@ -6,7 +6,7 @@ function showPage(id) {
   document.getElementById(id).classList.add("active");
 }
 
-/* HOME */
+/* LOAD HOME */
 async function loadHome() {
   const trendingSymbols = ["AAPL", "BTC/USD", "SP500"];
   const aiSymbols = ["TSLA", "ETH/USD"];
@@ -68,7 +68,7 @@ async function searchAsset() {
   loadChart(symbol);
 }
 
-/* CHART LOADER */
+/* LOAD CHART */
 async function loadChart(symbol) {
   symbol = symbol.toUpperCase();
 
@@ -90,7 +90,6 @@ async function loadChart(symbol) {
     data: {
       labels,
       datasets: [{
-        label: symbol,
         data: prices,
         borderWidth: 2,
         tension: 0.3
@@ -98,12 +97,8 @@ async function loadChart(symbol) {
     },
     options: {
       responsive: true,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        x: { display: false }
-      }
+      plugins: { legend: { display: false } },
+      scales: { x: { display: false } }
     }
   });
 }
