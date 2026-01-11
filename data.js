@@ -1,5 +1,3 @@
-// data.js
-
 const API_KEY = "1bf7c3ac-16ce-458a-a3a8-4f8431d69969";
 
 // --- CRYPTO (CoinGecko) ---
@@ -26,22 +24,28 @@ async function getCryptoData(symbol) {
 
 // --- STOCKS / FOREX (Polygon) ---
 async function getMarketData(symbol) {
-  const url = `https://api.polygon.io/v1/last/trade/${symbol}?apiKey=${API_KEY}`;
+  let s = symbol.toUpperCase();
+
+  // Ensure stock symbols have .US suffix
+  if (!s.includes(".") && /^[A-Z]+$/.test(s)) {
+    s += ".US";
+  }
+
+  const url = `https://api.polygon.io/v1/last/trade/${s}?apiKey=${API_KEY}`;
   const res = await fetch(url);
   const data = await res.json();
 
-  if (!data || !data.last) return null;
+  if (!data || !data.last) {
+    // If no data is available (e.g., market closed), return a message or a null value
+    return {
+      price: null,
+      change: null,
+      message: "Market closed or data unavailable"
+    };
+  }
 
   const price = data.last.price;
   const change = data.last.percent_change;
-
-  // Check if the market is open (Polygon does not directly provide market status, so we assume if there’s no data, the market is closed)
-  if (!data.last) {
-    return {
-      price: "Market closed",
-      change: null
-    };
-  }
 
   return {
     price: price,
@@ -67,7 +71,8 @@ async function getAsset(symbol) {
     return {
       price: d.price,
       change: d.change,
-      signal: getSignal(d.change)
+      signal: getSignal(d.change),
+      message: d.message || ""
     };
   }
 
@@ -75,10 +80,10 @@ async function getAsset(symbol) {
   const d = await getMarketData(symbol);
   if (!d) return null;
 
-  // If the market is closed, we can show the last price or a message
   return {
-    price: d.price === "Market closed" ? "Market closed" : d.price,
+    price: d.price,
     change: d.change,
-    signal: d.change !== null ? getSignal(d.change) : null
+    signal: getSignal(d.change),
+    message: d.message || ""
   };
 }
