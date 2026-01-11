@@ -44,13 +44,38 @@ function loadSearch() {
 }
 
 async function search() {
-  const symbol = document.getElementById("symbolInput").value.toUpperCase();
-  const data = await getAsset(symbol);
+  const resultEl = document.getElementById("result");
+  const symbol = document.getElementById("symbolInput").value.trim().toUpperCase();
 
-  if (!data || !data.price) {
-    document.getElementById("result").innerHTML = "Symbol not found";
+  if (!symbol) {
+    resultEl.innerHTML = "Please enter a symbol.";
     return;
   }
+
+  resultEl.innerHTML = "Loading...";
+
+  try {
+    const data = await getAsset(symbol);
+
+    if (!data || !data.price) {
+      resultEl.innerHTML = `
+        <div class="card">
+          ❌ Could not find "${symbol}"<br><br>
+          <small>Check your spelling or try another symbol</small>
+        </div>
+      `;
+      return;
+    }
+
+    let badgeClass = "";
+    if (data.signal === "BUY") badgeClass = "buy";
+    if (data.signal === "SELL") badgeClass = "sell";
+
+    resultEl.innerHTML = `
+      <div class="card">
+        <strong>${symbol}</strong>
+        <span class="badge ${badgeClass}">${data.signal}</span>
+
 
   let badgeClass = "";
   if (data.signal === "BUY") badgeClass = "buy";
