@@ -1,6 +1,6 @@
 const API_KEY = "77ff81accb7449078076fa13c52a3c32";
 
-/* INDEX NAME MAPP ING */
+/* INDEX SYMBOL MAP */
 const INDEX_MAP = {
   "NASDAQ": "NDX",
   "DOW": "DJI",
@@ -15,7 +15,7 @@ function getSignal(change) {
   return "HOLD";
 }
 
-/* MAIN DATA FETCH */
+/* MAIN FETCH */
 async function getAsset(symbol) {
   symbol = symbol.toUpperCase().replace(/\s+/g, "");
 
