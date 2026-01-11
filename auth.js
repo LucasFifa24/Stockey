@@ -1,66 +1,45 @@
-// auth.js
-
-// Function to get the current user from localStorage
 function getCurrentUser() {
-  const user = localStorage.getItem("currentUser");
-  console.log("getCurrentUser called:", user);
-  return user;
+  return localStorage.getItem("currentUser");
 }
 
-// Function to sign up a new user
 function signUp(username, password) {
-  console.log("signUp called with username:", username);
-  const existingUser = localStorage.getItem(`user_${username}`);
-  if (existingUser) {
-    console.error("User already exists!");
-    return false;
+  if (localStorage.getItem("user_" + username)) {
+    alert("User already exists");
+    return;
   }
-
-  const userData = { password, favorites: [], recent: [] };
-  localStorage.setItem(`user_${username}`, JSON.stringify(userData));
+  const data = {
+    password,
+    favorites: []
+  };
+  localStorage.setItem("user_" + username, JSON.stringify(data));
   localStorage.setItem("currentUser", username);
-  return true;
+  alert("Account created");
 }
 
-// Function to sign in an existing user
 function signIn(username, password) {
-  console.log("signIn called with username:", username);
-  const user = JSON.parse(localStorage.getItem(`user_${username}`));
-  if (!user) {
-    console.error("User not found!");
-    return false;
+  const data = JSON.parse(localStorage.getItem("user_" + username));
+  if (!data || data.password !== password) {
+    alert("Invalid login");
+    return;
   }
-
-  if (user.password === password) {
-    localStorage.setItem("currentUser", username);
-    return true;
-  } else {
-    console.error("Incorrect password!");
-    return false;
-  }
+  localStorage.setItem("currentUser", username);
+  alert("Signed in");
 }
 
-// Function to sign out the current user
 function signOut() {
-  console.log("signOut called");
   localStorage.removeItem("currentUser");
+  alert("Signed out");
 }
 
-// Function to get user data
 function getUserData() {
   const user = getCurrentUser();
   if (!user) return null;
-
-  const data = JSON.parse(localStorage.getItem(`user_${user}`));
-  console.log("getUserData called:", data);
-  return data;
+  return JSON.parse(localStorage.getItem("user_" + user));
 }
 
-// Function to save user data
 function saveUserData(data) {
   const user = getCurrentUser();
   if (user) {
-    localStorage.setItem(`user_${user}`, JSON.stringify(data));
-    console.log("saveUserData called:", data);
+    localStorage.setItem("user_" + user, JSON.stringify(data));
   }
 }
