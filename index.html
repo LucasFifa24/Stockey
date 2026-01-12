@@ -5,14 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Stockey</title>
 
-  <!-- Styless -->
+  <!-- Styles -->
   <link rel="stylesheet" href="styles.css" />
 
   <!-- Favicon -->
   <link rel="icon" href="favicon.png" />
 
   <!-- Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
 </head>
 <body>
 
@@ -25,14 +28,14 @@
   <!-- PAGES -->
   <main>
 
-    <!-- HOME -->
+    <!-- HOME PAGE -->
     <section id="page-home" class="page active">
       <h2>Market Highlights</h2>
       <div class="card">Popular Assets</div>
       <div class="card">Top Movers</div>
     </section>
 
-    <!-- SEARCH -->
+    <!-- SEARCH PAGE -->
     <section id="page-search" class="page">
       <h2>Search</h2>
 
@@ -46,12 +49,20 @@
       <p id="searchError" class="error"></p>
 
       <div id="searchResult" style="display:none;">
+
         <div class="asset-header">
           <span id="assetName"></span>
           <button id="favBtn">♡</button>
         </div>
 
         <div id="assetPrice" class="price"></div>
+
+        <!-- 🔥 TIMEFRAMES -->
+        <div class="timeframes">
+          <button class="tf-btn active" data-tf="1D">1D</button>
+          <button class="tf-btn" data-tf="1W">1W</button>
+          <button class="tf-btn" data-tf="1M">1M</button>
+        </div>
 
         <!-- 🔥 CHART (HIDDEN BY DEFAULT) -->
         <canvas
@@ -60,10 +71,11 @@
           height="220"
           style="display:none;">
         </canvas>
+
       </div>
     </section>
 
-    <!-- FAVORITES -->
+    <!-- FAVORITES PAGE -->
     <section id="page-favorites" class="page">
       <h2>Favorites</h2>
       <div id="favoritesList"></div>
@@ -71,7 +83,7 @@
 
   </main>
 
-  <!-- NAV BAR -->
+  <!-- NAVIGATION -->
   <nav class="bottom-nav">
     <button class="nav-btn active" data-page="page-home">Home</button>
     <button class="nav-btn" data-page="page-search">Search</button>
