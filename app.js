@@ -1,239 +1,181 @@
-/* =========================
-   CONFIG
-========================= */
-const TWELVE_API_KEY = "77ff81accb7449078076fa13c52a3c32";
-const REFRESH_INTERVAL = 20000; // 20 seconds
 
-/* =========================
-   NAVIGATION
-========================= */
-const pages = document.querySelectorAll(".page");
-const navButtons = document.querySelectorAll(".nav-btn");
+// ============================
+// CONFIG
+// ============================
+const API_KEY = "77ff81accb7449078076fa13c52a3c32";
+const BASE_URL = "https://api.twelvedata.com/time_series";
 
-function showPage(id) {
-  pages.forEach(p => p.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  navButtons.forEach(b => b.classList.remove("active"));
-  document.querySelector(`[data-page="${id}"]`).classList.add("active");
+let currentSymbol = "";
+let currentInterval = "5min";
+let chartInstance = null;
+
+// ============================
+// PAGE NAVIGATION
+// ============================
+function showPage(pageId) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(pageId).classList.add("active");
+
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  event.target.closest(".nav-btn").classList.add("active");
 }
 
-navButtons.forEach(b =>
-  b.addEventListener("click", () => showPage(b.dataset.page))
-);
+// ============================
+// SEARCH
+// ============================
+async function searchAsset(symbol = null) {
+  const input = document.getElementById("searchInput");
+  const asset = symbol || input.value.trim().toUpperCase();
 
-/* =========================
-   CLOCK
-========================= */
-function updateClock() {
-  document.getElementById("clock").textContent =
-    new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-setInterval(updateClock, 1000);
-updateClock();
+  if (!asset) return;
 
-/* =========================
-   ELEMENTS
-========================= */
-const searchInput = document.getElementById("searchInput");
-const searchResult = document.getElementById("searchResult");
-const assetName = document.getElementById("assetName");
-const assetPrice = document.getElementById("assetPrice");
-const searchError = document.getElementById("searchError");
-const favBtn = document.getElementById("favBtn");
-const favoritesList = document.getElementById("favoritesList");
-const chart = document.getElementById("chart");
-const ctx = chart.getContext("2d");
-const tfButtons = document.querySelectorAll(".tf-btn");
-
-/* =========================
-   STATE
-========================= */
-let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-let currentSymbol = null;
-let currentTF = "1D";
-let refreshTimer = null;
-
-/* =========================
-   TIMEFRAMES
-========================= */
-const TF_MAP = {
-  "1D": { interval: "5min", size: 60 },
-  "1W": { interval: "15min", size: 80 },
-  "1M": { interval: "1h", size: 120 }
-};
-
-/* =========================
-   DATA FETCH
-========================= */
-async function fetchData(symbol) {
-  const tf = TF_MAP[currentTF];
-  const url =
-    `https://api.twelvedata.com/time_series` +
-    `?symbol=${symbol}` +
-    `&interval=${tf.interval}` +
-    `&outputsize=${tf.size}` +
-    `&apikey=${TWELVE_API_KEY}`;
-
-  const res = await fetch(url);
-  const data = await res.json();
-  if (!data.values) throw new Error("Invalid symbol");
-  return data.values.reverse();
-}
-
-/* =========================
-   CHART HELPERS
-========================= */
-function clearChart() {
-  ctx.clearRect(0, 0, chart.width, chart.height);
-  chart.style.display = "none";
-}
-
-function drawCandles(values) {
-  ctx.clearRect(0, 0, chart.width, chart.height);
-
-  const pad = 20;
-  const candleWidth = (chart.width - pad * 2) / values.length;
-
-  const highs = values.map(v => +v.high);
-  const lows = values.map(v => +v.low);
-  const max = Math.max(...highs);
-  const min = Math.min(...lows);
-
-  function y(price) {
-    return (
-      chart.height -
-      pad -
-      ((price - min) / (max - min)) *
-        (chart.height - pad * 2)
-    );
-  }
-
-  values.forEach((v, i) => {
-    const open = +v.open;
-    const close = +v.close;
-    const high = +v.high;
-    const low = +v.low;
-
-    const color = close >= open ? "#2ee59d" : "#ff6b6b";
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color;
-
-    const x = pad + i * candleWidth + candleWidth / 2;
-
-    // Wick
-    ctx.beginPath();
-    ctx.moveTo(x, y(high));
-    ctx.lineTo(x, y(low));
-    ctx.stroke();
-
-    // Body
-    const bodyTop = y(Math.max(open, close));
-    const bodyHeight = Math.abs(y(open) - y(close)) || 1;
-    ctx.fillRect(
-      x - candleWidth * 0.3,
-      bodyTop,
-      candleWidth * 0.6,
-      bodyHeight
-    );
-  });
-}
-
-/* =========================
-   LOAD & REFRESH
-========================= */
-async function loadSymbol(symbol) {
-  clearChart();
-  searchError.textContent = "";
+  currentSymbol = asset;
+  document.getElementById("chart").hidden = true;
+  document.getElementById("assetInfo").innerHTML = "Loading…";
 
   try {
-    const values = await fetchData(symbol);
-    const last = values[values.length - 1];
+    const url = `${BASE_URL}?symbol=${asset}&interval=${currentInterval}&apikey=${API_KEY}&outputsize=50`;
+    const res = await fetch(url);
+    const data = await res.json();
 
-    currentSymbol = symbol;
-    assetName.textContent = symbol;
-    assetPrice.textContent = `$${last.close}`;
-    searchResult.style.display = "block";
+    if (!data.values) {
+      showInvalid(asset);
+      return;
+    }
 
-    chart.style.display = "block";
-    drawCandles(values);
-    updateFavBtn();
-    startAutoRefresh();
-  } catch {
-    clearChart();
-    searchError.textContent = "Check your spelling or symbol";
-    stopAutoRefresh();
+    renderAsset(asset, data.values.reverse());
+  } catch (err) {
+    showInvalid(asset);
   }
 }
 
-/* =========================
-   AUTO REFRESH
-========================= */
-function startAutoRefresh() {
-  stopAutoRefresh();
-  refreshTimer = setInterval(() => {
-    if (currentSymbol) loadSymbol(currentSymbol);
-  }, REFRESH_INTERVAL);
+// ============================
+// INVALID SEARCH HANDLER
+// ============================
+function showInvalid(symbol) {
+  document.getElementById("assetInfo").innerHTML =
+    `<p style="color:#ff6b6b">❌ "${symbol}" not found. Check spelling.</p>`;
+
+  document.getElementById("chart").hidden = true;
+  if (chartInstance) {
+    chartInstance.destroy();
+    chartInstance = null;
+  }
 }
 
-function stopAutoRefresh() {
-  if (refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = null;
+// ============================
+// RENDER DATA
+// ============================
+function renderAsset(symbol, values) {
+  const last = values[values.length - 1];
+
+  document.getElementById("assetInfo").innerHTML = `
+    <h3>${symbol}</h3>
+    <p>Price: <strong>$${last.close}</strong></p>
+  `;
+
+  drawChart(values);
+  document.getElementById("chart").hidden = false;
+  document.getElementById("favBtn").hidden = false;
+  updateFavButton();
 }
 
-/* =========================
-   SEARCH
-========================= */
-searchInput.addEventListener("keydown", (e) => {
-  if (e.key !== "Enter") return;
-  const symbol = searchInput.value.trim().toUpperCase();
-  if (symbol) loadSymbol(symbol);
-});
+// ============================
+// CHART
+// ============================
+function drawChart(values) {
+  const ctx = document.getElementById("chart").getContext("2d");
 
-/* =========================
-   TIMEFRAME SWITCH
-========================= */
-tfButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    if (!currentSymbol) return;
-    tfButtons.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    currentTF = btn.dataset.tf;
-    loadSymbol(currentSymbol);
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: values.map(v => v.datetime),
+      datasets: [{
+        label: currentSymbol,
+        data: values.map(v => v.close),
+        borderColor: "#2ee59d",
+        backgroundColor: "rgba(46,229,157,0.1)",
+        tension: 0.25,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#9aa1c7" } },
+        y: { ticks: { color: "#9aa1c7" } }
+      }
+    }
   });
-});
-
-/* =========================
-   FAVORITES
-========================= */
-function updateFavBtn() {
-  favBtn.textContent = favorites.includes(currentSymbol) ? "♥" : "♡";
 }
 
-favBtn.onclick = () => {
-  if (!currentSymbol) return;
-  favorites.includes(currentSymbol)
-    ? favorites = favorites.filter(f => f !== currentSymbol)
-    : favorites.push(currentSymbol);
+// ============================
+// TIMEFRAMES
+// ============================
+function setTimeframe(interval) {
+  currentInterval = interval;
+  if (currentSymbol) searchAsset(currentSymbol);
+}
 
-  localStorage.setItem("favorites", JSON.stringify(favorites));
-  updateFavBtn();
+// ============================
+// FAVORITES
+// ============================
+function getFavorites() {
+  return JSON.parse(localStorage.getItem("favorites") || "[]");
+}
+
+function saveFavorites(favs) {
+  localStorage.setItem("favorites", JSON.stringify(favs));
+}
+
+function toggleFavorite() {
+  let favs = getFavorites();
+
+  if (favs.includes(currentSymbol)) {
+    favs = favs.filter(f => f !== currentSymbol);
+  } else {
+    favs.push(currentSymbol);
+  }
+
+  saveFavorites(favs);
+  updateFavButton();
   renderFavorites();
-};
+}
+
+function updateFavButton() {
+  const favs = getFavorites();
+  document.getElementById("favBtn").textContent =
+    favs.includes(currentSymbol) ? "💔 Unfavorite" : "❤️ Favorite";
+}
 
 function renderFavorites() {
-  favoritesList.innerHTML = favorites.length ? "" : "No favorites yet";
-  favorites.forEach(sym => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.textContent = sym;
-    card.onclick = () => {
-      showPage("page-search");
-      searchInput.value = sym;
-      loadSymbol(sym);
+  const list = document.getElementById("favoritesList");
+  const favs = getFavorites();
+
+  list.innerHTML = "";
+
+  if (!favs.length) {
+    list.innerHTML = "<p>No favorites yet</p>";
+    return;
+  }
+
+  favs.forEach(sym => {
+    const div = document.createElement("div");
+    div.textContent = sym;
+    div.onclick = () => {
+      showPage("search");
+      document.getElementById("searchInput").value = sym;
+      searchAsset(sym);
     };
-    favoritesList.appendChild(card);
+    list.appendChild(div);
   });
 }
 
+// ============================
+// INIT
+// ============================
 renderFavorites();
-clearChart();
