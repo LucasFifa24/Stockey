@@ -32,6 +32,11 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
+function clearChart() {
+  ctx.clearRect(0, 0, chart.width, chart.height);
+  chart.style.display = "none";
+}
+
 /* =========================
    SEARCH + FAVORITES
 ========================= */
@@ -123,6 +128,7 @@ searchInput.addEventListener("keydown", async (e) => {
     assetName.textContent = symbol;
     assetPrice.textContent = `$${latest.close}`;
     searchResult.style.display = "block";
+    chart.style.display = "block";
 
     drawChart(values);
     updateFavButton();
