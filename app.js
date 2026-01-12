@@ -2,9 +2,10 @@
    CONFIG
 ========================= */
 const TWELVE_API_KEY = "77ff81accb7449078076fa13c52a3c32";
+const REFRESH_INTERVAL = 20000; // 20 seconds
 
 /* =========================
-   PAGE NAV
+   NAVIGATION
 ========================= */
 const pages = document.querySelectorAll(".page");
 const navButtons = document.querySelectorAll(".nav-btn");
@@ -12,7 +13,6 @@ const navButtons = document.querySelectorAll(".nav-btn");
 function showPage(id) {
   pages.forEach(p => p.classList.remove("active"));
   document.getElementById(id).classList.add("active");
-
   navButtons.forEach(b => b.classList.remove("active"));
   document.querySelector(`[data-page="${id}"]`).classList.add("active");
 }
@@ -51,9 +51,10 @@ const tfButtons = document.querySelectorAll(".tf-btn");
 let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 let currentSymbol = null;
 let currentTF = "1D";
+let refreshTimer = null;
 
 /* =========================
-   TIMEFRAME CONFIG
+   TIMEFRAMES
 ========================= */
 const TF_MAP = {
   "1D": { interval: "5min", size: 60 },
@@ -75,95 +76,129 @@ async function fetchData(symbol) {
 
   const res = await fetch(url);
   const data = await res.json();
-
-  if (!data.values) throw new Error("Invalid");
-
+  if (!data.values) throw new Error("Invalid symbol");
   return data.values.reverse();
 }
 
 /* =========================
-   CHART
+   CHART HELPERS
 ========================= */
 function clearChart() {
   ctx.clearRect(0, 0, chart.width, chart.height);
   chart.style.display = "none";
 }
 
-function drawChart(values) {
+function drawCandles(values) {
   ctx.clearRect(0, 0, chart.width, chart.height);
 
-  const prices = values.map(v => Number(v.close));
-  const max = Math.max(...prices);
-  const min = Math.min(...prices);
   const pad = 20;
+  const candleWidth = (chart.width - pad * 2) / values.length;
 
-  ctx.strokeStyle =
-    prices[prices.length - 1] >= prices[0] ? "#2ee59d" : "#ff6b6b";
-  ctx.lineWidth = 2;
+  const highs = values.map(v => +v.high);
+  const lows = values.map(v => +v.low);
+  const max = Math.max(...highs);
+  const min = Math.min(...lows);
 
-  ctx.beginPath();
-  prices.forEach((p, i) => {
-    const x = pad + (i / (prices.length - 1)) * (chart.width - pad * 2);
-    const y =
+  function y(price) {
+    return (
       chart.height -
       pad -
-      ((p - min) / (max - min)) * (chart.height - pad * 2);
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  });
+      ((price - min) / (max - min)) *
+        (chart.height - pad * 2)
+    );
+  }
 
-  ctx.stroke();
+  values.forEach((v, i) => {
+    const open = +v.open;
+    const close = +v.close;
+    const high = +v.high;
+    const low = +v.low;
+
+    const color = close >= open ? "#2ee59d" : "#ff6b6b";
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+
+    const x = pad + i * candleWidth + candleWidth / 2;
+
+    // Wick
+    ctx.beginPath();
+    ctx.moveTo(x, y(high));
+    ctx.lineTo(x, y(low));
+    ctx.stroke();
+
+    // Body
+    const bodyTop = y(Math.max(open, close));
+    const bodyHeight = Math.abs(y(open) - y(close)) || 1;
+    ctx.fillRect(
+      x - candleWidth * 0.3,
+      bodyTop,
+      candleWidth * 0.6,
+      bodyHeight
+    );
+  });
+}
+
+/* =========================
+   LOAD & REFRESH
+========================= */
+async function loadSymbol(symbol) {
+  clearChart();
+  searchError.textContent = "";
+
+  try {
+    const values = await fetchData(symbol);
+    const last = values[values.length - 1];
+
+    currentSymbol = symbol;
+    assetName.textContent = symbol;
+    assetPrice.textContent = `$${last.close}`;
+    searchResult.style.display = "block";
+
+    chart.style.display = "block";
+    drawCandles(values);
+    updateFavBtn();
+    startAutoRefresh();
+  } catch {
+    clearChart();
+    searchError.textContent = "Check your spelling or symbol";
+    stopAutoRefresh();
+  }
+}
+
+/* =========================
+   AUTO REFRESH
+========================= */
+function startAutoRefresh() {
+  stopAutoRefresh();
+  refreshTimer = setInterval(() => {
+    if (currentSymbol) loadSymbol(currentSymbol);
+  }, REFRESH_INTERVAL);
+}
+
+function stopAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = null;
 }
 
 /* =========================
    SEARCH
 ========================= */
-searchInput.addEventListener("keydown", async (e) => {
+searchInput.addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
-
-  clearChart();
-  searchError.textContent = "";
-
   const symbol = searchInput.value.trim().toUpperCase();
-  if (!symbol) return;
-
-  try {
-    const values = await fetchData(symbol);
-    const latest = values[values.length - 1];
-
-    currentSymbol = symbol;
-    assetName.textContent = symbol;
-    assetPrice.textContent = `$${latest.close}`;
-    searchResult.style.display = "block";
-
-    chart.style.display = "block";
-    drawChart(values);
-    updateFavBtn();
-  } catch {
-    searchError.textContent = "Check your spelling or symbol";
-    clearChart();
-  }
+  if (symbol) loadSymbol(symbol);
 });
 
 /* =========================
    TIMEFRAME SWITCH
 ========================= */
 tfButtons.forEach(btn => {
-  btn.addEventListener("click", async () => {
+  btn.addEventListener("click", () => {
     if (!currentSymbol) return;
-
     tfButtons.forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
-
     currentTF = btn.dataset.tf;
-    clearChart();
-
-    try {
-      const values = await fetchData(currentSymbol);
-      chart.style.display = "block";
-      drawChart(values);
-    } catch {
-      clearChart();
-    }
+    loadSymbol(currentSymbol);
   });
 });
 
@@ -187,16 +222,16 @@ favBtn.onclick = () => {
 
 function renderFavorites() {
   favoritesList.innerHTML = favorites.length ? "" : "No favorites yet";
-  favorites.forEach(s => {
-    const div = document.createElement("div");
-    div.className = "card";
-    div.textContent = s;
-    div.onclick = () => {
+  favorites.forEach(sym => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.textContent = sym;
+    card.onclick = () => {
       showPage("page-search");
-      searchInput.value = s;
-      searchInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+      searchInput.value = sym;
+      loadSymbol(sym);
     };
-    favoritesList.appendChild(div);
+    favoritesList.appendChild(card);
   });
 }
 
