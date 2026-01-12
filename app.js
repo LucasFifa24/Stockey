@@ -33,7 +33,7 @@ setInterval(updateClock, 1000);
 updateClock();
 
 /* =========================
-   SEARCH + FAVORITES
+   ELEMENTS
 ========================= */
 const searchInput = document.getElementById("searchInput");
 const searchResult = document.getElementById("searchResult");
@@ -42,7 +42,12 @@ const assetPrice = document.getElementById("assetPrice");
 const searchError = document.getElementById("searchError");
 const favBtn = document.getElementById("favBtn");
 const favoritesList = document.getElementById("favoritesList");
+const chart = document.getElementById("chart");
+const ctx = chart.getContext("2d");
 
+/* =========================
+   STATE
+========================= */
 let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 let currentSymbol = null;
 
@@ -66,11 +71,8 @@ async function fetchTwelveData(symbol) {
 }
 
 /* =========================
-   CHART
+   CHART HELPERS
 ========================= */
-const chart = document.getElementById("chart");
-const ctx = chart.getContext("2d");
-
 function clearChart() {
   ctx.clearRect(0, 0, chart.width, chart.height);
   chart.style.display = "none";
@@ -84,8 +86,8 @@ function drawChart(values) {
   const min = Math.min(...prices);
   const padding = 20;
 
-  const up = prices[prices.length - 1] >= prices[0];
-  ctx.strokeStyle = up ? "#2ee59d" : "#ff6b6b";
+  const isUp = prices[prices.length - 1] >= prices[0];
+  ctx.strokeStyle = isUp ? "#2ee59d" : "#ff6b6b";
   ctx.lineWidth = 2;
   ctx.shadowColor = ctx.strokeStyle;
   ctx.shadowBlur = 10;
@@ -109,12 +111,13 @@ function drawChart(values) {
 }
 
 /* =========================
-   SEARCH HANDLER
+   SEARCH HANDLER (FIXED)
 ========================= */
 searchInput.addEventListener("keydown", async (e) => {
   if (e.key !== "Enter") return;
 
-  clearChart(); // Clear chart immediately when starting a new search
+  // 🔥 CRITICAL FIX: always clear old chart immediately
+  clearChart();
 
   const symbol = searchInput.value.trim().toUpperCase();
   searchError.textContent = "";
@@ -130,14 +133,14 @@ searchInput.addEventListener("keydown", async (e) => {
     assetName.textContent = symbol;
     assetPrice.textContent = `$${latest.close}`;
     searchResult.style.display = "block";
-    chart.style.display = "block";
 
+    chart.style.display = "block"; // only show AFTER success
     drawChart(values);
-    updateFavButton();
 
+    updateFavButton();
   } catch {
     searchError.textContent = "Check your spelling or symbol availability";
-    clearChart();
+    clearChart(); // ensure no stale chart ever remains
   }
 });
 
@@ -157,11 +160,9 @@ function updateFavButton() {
 favBtn.addEventListener("click", () => {
   if (!currentSymbol) return;
 
-  if (favorites.includes(currentSymbol)) {
-    favorites = favorites.filter(f => f !== currentSymbol);
-  } else {
-    favorites.push(currentSymbol);
-  }
+  favorites.includes(currentSymbol)
+    ? favorites = favorites.filter(f => f !== currentSymbol)
+    : favorites.push(currentSymbol);
 
   localStorage.setItem("favorites", JSON.stringify(favorites));
   updateFavButton();
@@ -183,7 +184,9 @@ function renderFavorites() {
     card.onclick = () => {
       showPage("page-search");
       searchInput.value = symbol;
-      searchInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+      searchInput.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter" })
+      );
     };
 
     favoritesList.appendChild(card);
@@ -191,3 +194,8 @@ function renderFavorites() {
 }
 
 renderFavorites();
+
+/* =========================
+   INITIAL STATE
+========================= */
+clearChart(); // ensure chart is hidden on load
