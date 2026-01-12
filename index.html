@@ -2,89 +2,83 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Stockey</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stockey</title>
 
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css">
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="favicon.png" />
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<div id="app">
-
   <!-- HEADER -->
-  <header>
-    <div>
-      <h1>Stockey</h1>
-      <span>AI-Powered Trading Insights</span>
-    </div>
+  <header class="top-bar">
+    <h1>Stockey</h1>
     <span id="clock"></span>
   </header>
 
-  <!-- MAIN -->
+  <!-- PAGES -->
   <main>
 
     <!-- HOME -->
     <section id="page-home" class="page active">
-      <div class="section-title hot">📈 Hot Movers</div>
-      <div class="empty-text">No hot movers right now</div>
-
-      <div class="section-title buy">⬆ AI Recommends: Buy</div>
-      <div class="empty-text">No strong buy signals right now</div>
-
-      <div class="section-title sell">⬇ AI Recommends: Sell</div>
-      <div class="empty-text">No strong sell signals right now</div>
+      <h2>Market Highlights</h2>
+      <div class="card">Popular Assets</div>
+      <div class="card">Top Movers</div>
     </section>
 
     <!-- SEARCH -->
     <section id="page-search" class="page">
-      <div class="section-title">🔍 Search Asset</div>
+      <h2>Search</h2>
 
       <input
-        type="text"
         id="searchInput"
+        type="text"
         placeholder="Search stock, crypto, forex..."
+        autocomplete="off"
       />
 
-      <div id="searchResult" class="card" style="display:none;">
-        <h3 id="assetName"></h3>
-        <p id="assetPrice"></p>
-        <button id="favBtn" class="favorite-btn">♡</button>
+      <p id="searchError" class="error"></p>
+
+      <div id="searchResult" style="display:none;">
+        <div class="asset-header">
+          <span id="assetName"></span>
+          <button id="favBtn">♡</button>
+        </div>
+
+        <div id="assetPrice" class="price"></div>
+
+        <!-- 🔥 CHART (HIDDEN BY DEFAULT) -->
+        <canvas
+          id="chart"
+          width="600"
+          height="220"
+          style="display:none;">
+        </canvas>
       </div>
-      <canvas id="chart" width="600" height="220"></canvas>
-
-
-      <div id="searchError" class="empty-text"></div>
     </section>
 
     <!-- FAVORITES -->
     <section id="page-favorites" class="page">
-      <div class="section-title">❤️ Favorites</div>
-      <div id="favoritesList" class="empty-text">
-        No favorites yet
-      </div>
-    </section>
-
-    <!-- SETTINGS -->
-    <section id="page-settings" class="page">
-      <div class="section-title">⚙ Settings</div>
-      <div class="empty-text">
-        Account & preferences coming soon
-      </div>
+      <h2>Favorites</h2>
+      <div id="favoritesList"></div>
     </section>
 
   </main>
 
-  <!-- NAV -->
-  <nav>
-    <button class="nav-btn active" data-page="page-home">🏠 Home</button>
-    <button class="nav-btn" data-page="page-search">🔍 Search</button>
-    <button class="nav-btn" data-page="page-favorites">❤️ Favorites</button>
-    <button class="nav-btn" data-page="page-settings">⚙ Settings</button>
+  <!-- NAV BAR -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-page="page-home">Home</button>
+    <button class="nav-btn" data-page="page-search">Search</button>
+    <button class="nav-btn" data-page="page-favorites">Favorites</button>
   </nav>
 
-</div>
-
-<script src="app.js"></script>
+  <!-- SCRIPT -->
+  <script src="app.js"></script>
 </body>
 </html>
