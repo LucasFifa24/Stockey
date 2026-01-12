@@ -56,7 +56,7 @@ function showInvalid(symbol) {
   document.getElementById("assetInfo").innerHTML =
     `<p style="color:#ff6b6b">❌ "${symbol}" not found. Check spelling.</p>`;
 
-  document.getElementById("chart").hidden = true;
+  document.getElementById("chartContainer").hidden = true;
   if (chartInstance) {
     chartInstance.destroy();
     chartInstance = null;
@@ -75,7 +75,7 @@ function renderAsset(symbol, values) {
   `;
 
   drawChart(values);
-  document.getElementById("chart").hidden = false;
+  document.getElementById("chartContainer").hidden = false;
   document.getElementById("favBtn").hidden = false;
   updateFavButton();
 }
