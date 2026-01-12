@@ -1,126 +1,193 @@
-/* RESET */
+/* =====================
+   RESET & BASE
+===================== */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: "Inter", sans-serif;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* BODY */
 body {
   background: #0b0f1a;
-  color: #fff;
-  padding-bottom: 70px;
+  color: #e6e8ee;
+  padding-bottom: 72px;
 }
 
-/* HEADER */
+/* =====================
+   HEADER
+===================== */
 .top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
-  background: #12182b;
+  padding: 14px 18px;
+  background: #0f1424;
+  border-bottom: 1px solid #1b2240;
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
-/* PAGES */
+.top-bar h1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+#clock {
+  font-size: 14px;
+  color: #9aa1c7;
+}
+
+/* =====================
+   LAYOUT
+===================== */
+main {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
 .page {
   display: none;
-  padding: 16px;
+  padding: 18px;
+  animation: fadeIn 0.2s ease-in-out;
 }
 
 .page.active {
   display: block;
 }
 
-/* CARDS */
-.card {
-  background: #151c33;
-  padding: 14px;
-  border-radius: 12px;
-  margin-top: 12px;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* INPUT */
+/* =====================
+   CARDS
+===================== */
+.card {
+  background: #121830;
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 14px;
+  border: 1px solid #1b2240;
+}
+
+/* =====================
+   INPUT
+===================== */
 input {
   width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  background: #151c33;
-  color: white;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid #1b2240;
+  background: #121830;
+  color: #fff;
   font-size: 16px;
 }
 
-/* ERROR */
-.error {
-  color: #ff6b6b;
-  margin-top: 6px;
+input::placeholder {
+  color: #7f86aa;
 }
 
-/* ASSET */
+/* =====================
+   ERROR
+===================== */
+.error {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #ff6b6b;
+}
+
+/* =====================
+   ASSET HEADER
+===================== */
 .asset-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 14px;
+  margin-top: 18px;
+}
+
+#assetName {
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .price {
-  font-size: 28px;
-  margin: 10px 0;
+  font-size: 30px;
+  font-weight: 600;
+  margin: 8px 0 14px;
 }
 
-/* FAVORITE */
+/* =====================
+   FAVORITE BUTTON
+===================== */
 #favBtn {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 22px;
   color: #ff6b6b;
   cursor: pointer;
 }
 
-/* TIMEFRAMES */
+/* =====================
+   TIMEFRAMES
+===================== */
 .timeframes {
   display: flex;
   gap: 10px;
-  margin: 12px 0;
+  margin-bottom: 12px;
 }
 
 .tf-btn {
   flex: 1;
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  background: #1b2340;
-  color: #fff;
+  padding: 10px 0;
+  border-radius: 12px;
+  border: 1px solid #1b2240;
+  background: #121830;
+  color: #cfd3ff;
+  font-size: 14px;
 }
 
 .tf-btn.active {
   background: #2ee59d;
-  color: #000;
+  color: #08120d;
+  border-color: #2ee59d;
 }
 
-/* CHART */
+/* =====================
+   CHART
+===================== */
 canvas {
   width: 100%;
-  max-width: 100%;
-  margin-top: 12px;
+  height: auto;
+  border-radius: 12px;
+  background: #0f1424;
+  border: 1px solid #1b2240;
 }
 
-/* FAVORITES LIST */
+/* =====================
+   FAVORITES
+===================== */
 #favoritesList .card {
   cursor: pointer;
+  transition: background 0.15s ease;
 }
 
-/* NAV BAR */
+#favoritesList .card:hover {
+  background: #151c38;
+}
+
+/* =====================
+   NAV BAR
+===================== */
 .bottom-nav {
   position: fixed;
   bottom: 0;
   width: 100%;
-  background: #12182b;
+  background: #0f1424;
+  border-top: 1px solid #1b2240;
   display: flex;
   justify-content: space-around;
   padding: 10px 0;
@@ -129,17 +196,27 @@ canvas {
 .nav-btn {
   background: none;
   border: none;
-  color: #aaa;
-  font-size: 14px;
+  color: #9aa1c7;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .nav-btn.active {
   color: #2ee59d;
 }
 
-/* MOBILE POLISH */
-@media (max-width: 480px) {
+/* =====================
+   MOBILE POLISH
+===================== */
+@media (max-width: 600px) {
   .price {
     font-size: 24px;
+  }
+
+  main {
+    padding-bottom: 8px;
   }
 }
