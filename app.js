@@ -32,11 +32,6 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-function clearChart() {
-  ctx.clearRect(0, 0, chart.width, chart.height);
-  chart.style.display = "none";
-}
-
 /* =========================
    SEARCH + FAVORITES
 ========================= */
@@ -76,6 +71,11 @@ async function fetchTwelveData(symbol) {
 const chart = document.getElementById("chart");
 const ctx = chart.getContext("2d");
 
+function clearChart() {
+  ctx.clearRect(0, 0, chart.width, chart.height);
+  chart.style.display = "none";
+}
+
 function drawChart(values) {
   ctx.clearRect(0, 0, chart.width, chart.height);
 
@@ -114,6 +114,8 @@ function drawChart(values) {
 searchInput.addEventListener("keydown", async (e) => {
   if (e.key !== "Enter") return;
 
+  clearChart(); // Clear chart immediately when starting a new search
+
   const symbol = searchInput.value.trim().toUpperCase();
   searchError.textContent = "";
   searchResult.style.display = "none";
@@ -135,6 +137,7 @@ searchInput.addEventListener("keydown", async (e) => {
 
   } catch {
     searchError.textContent = "Check your spelling or symbol availability";
+    clearChart();
   }
 });
 
@@ -154,9 +157,11 @@ function updateFavButton() {
 favBtn.addEventListener("click", () => {
   if (!currentSymbol) return;
 
-  favorites.includes(currentSymbol)
-    ? favorites = favorites.filter(f => f !== currentSymbol)
-    : favorites.push(currentSymbol);
+  if (favorites.includes(currentSymbol)) {
+    favorites = favorites.filter(f => f !== currentSymbol);
+  } else {
+    favorites.push(currentSymbol);
+  }
 
   localStorage.setItem("favorites", JSON.stringify(favorites));
   updateFavButton();
