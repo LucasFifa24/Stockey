@@ -1,34 +1,33 @@
 /* =========================
-   PAGE NAVIGATION + ANIMATION
+   CONFIG
+========================= */
+const TWELVE_API_KEY = "77ff81accb7449078076fa13c52a3c32";
+
+/* =========================
+   PAGE NAVIGATION
 ========================= */
 const pages = document.querySelectorAll(".page");
 const navButtons = document.querySelectorAll(".nav-btn");
 
 function showPage(pageId) {
-  pages.forEach(page => {
-    page.classList.remove("active", "slide-in");
-  });
+  pages.forEach(p => p.classList.remove("active", "slide-in"));
+  const page = document.getElementById(pageId);
+  page.classList.add("active", "slide-in");
 
-  const target = document.getElementById(pageId);
-  target.classList.add("active", "slide-in");
-
-  navButtons.forEach(btn => btn.classList.remove("active"));
+  navButtons.forEach(b => b.classList.remove("active"));
   document.querySelector(`[data-page="${pageId}"]`).classList.add("active");
 }
 
 navButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    showPage(btn.dataset.page);
-  });
+  btn.addEventListener("click", () => showPage(btn.dataset.page));
 });
 
 /* =========================
    CLOCK
 ========================= */
 function updateClock() {
-  const now = new Date();
   document.getElementById("clock").textContent =
-    now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 setInterval(updateClock, 1000);
 updateClock();
@@ -47,7 +46,67 @@ const favoritesList = document.getElementById("favoritesList");
 let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 let currentSymbol = null;
 
-searchInput?.addEventListener("keydown", async (e) => {
+/* =========================
+   TWELVE DATA FETCH
+========================= */
+async function fetchTwelveData(symbol) {
+  const url =
+    `https://api.twelvedata.com/time_series` +
+    `?symbol=${symbol}` +
+    `&interval=5min` +
+    `&outputsize=60` +
+    `&apikey=${TWELVE_API_KEY}`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (!data.values) throw new Error("No data");
+
+  return data.values.reverse();
+}
+
+/* =========================
+   CHART
+========================= */
+const chart = document.getElementById("chart");
+const ctx = chart.getContext("2d");
+
+function drawChart(values) {
+  ctx.clearRect(0, 0, chart.width, chart.height);
+
+  const prices = values.map(v => Number(v.close));
+  const max = Math.max(...prices);
+  const min = Math.min(...prices);
+  const padding = 20;
+
+  const up = prices[prices.length - 1] >= prices[0];
+  ctx.strokeStyle = up ? "#2ee59d" : "#ff6b6b";
+  ctx.lineWidth = 2;
+  ctx.shadowColor = ctx.strokeStyle;
+  ctx.shadowBlur = 10;
+
+  ctx.beginPath();
+  prices.forEach((price, i) => {
+    const x =
+      padding +
+      (i / (prices.length - 1)) * (chart.width - padding * 2);
+    const y =
+      chart.height -
+      padding -
+      ((price - min) / (max - min)) *
+        (chart.height - padding * 2);
+
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+/* =========================
+   SEARCH HANDLER
+========================= */
+searchInput.addEventListener("keydown", async (e) => {
   if (e.key !== "Enter") return;
 
   const symbol = searchInput.value.trim().toUpperCase();
@@ -57,23 +116,25 @@ searchInput?.addEventListener("keydown", async (e) => {
   if (!symbol) return;
 
   try {
-    // MOCK price (safe, no API errors)
-    const price = (Math.random() * 1000).toFixed(2);
+    const values = await fetchTwelveData(symbol);
+    const latest = values[values.length - 1];
 
     currentSymbol = symbol;
     assetName.textContent = symbol;
-    assetPrice.textContent = `$${price}`;
+    assetPrice.textContent = `$${latest.close}`;
     searchResult.style.display = "block";
-     
-    const data = generateMockData();
-    drawChart(data);
 
+    drawChart(values);
     updateFavButton();
+
   } catch {
-    searchError.textContent = "Check your spelling or symbol";
+    searchError.textContent = "Check your spelling or symbol availability";
   }
 });
 
+/* =========================
+   FAVORITES
+========================= */
 function updateFavButton() {
   if (favorites.includes(currentSymbol)) {
     favBtn.textContent = "♥";
@@ -84,23 +145,18 @@ function updateFavButton() {
   }
 }
 
-favBtn?.addEventListener("click", () => {
+favBtn.addEventListener("click", () => {
   if (!currentSymbol) return;
 
-  if (favorites.includes(currentSymbol)) {
-    favorites = favorites.filter(f => f !== currentSymbol);
-  } else {
-    favorites.push(currentSymbol);
-  }
+  favorites.includes(currentSymbol)
+    ? favorites = favorites.filter(f => f !== currentSymbol)
+    : favorites.push(currentSymbol);
 
   localStorage.setItem("favorites", JSON.stringify(favorites));
   updateFavButton();
   renderFavorites();
 });
 
-/* =========================
-   FAVORITES PAGE
-========================= */
 function renderFavorites() {
   if (favorites.length === 0) {
     favoritesList.textContent = "No favorites yet";
@@ -109,65 +165,18 @@ function renderFavorites() {
 
   favoritesList.innerHTML = "";
   favorites.forEach(symbol => {
-    const div = document.createElement("div");
-    div.className = "card";
-    div.textContent = symbol;
+    const card = document.createElement("div");
+    card.className = "card";
+    card.textContent = symbol;
 
-    div.onclick = () => {
+    card.onclick = () => {
       showPage("page-search");
       searchInput.value = symbol;
       searchInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
     };
 
-    favoritesList.appendChild(div);
+    favoritesList.appendChild(card);
   });
 }
 
 renderFavorites();
-
-
-/* =========================
-   SIMPLE PRICE CHART
-========================= */
-const chart = document.getElementById("chart");
-const ctx = chart.getContext("2d");
-
-function generateMockData() {
-  let price = Math.random() * 100 + 50;
-  return Array.from({ length: 30 }, () => {
-    price += (Math.random() - 0.5) * 5;
-    return price;
-  });
-}
-
-function drawChart(data) {
-  ctx.clearRect(0, 0, chart.width, chart.height);
-
-  const padding = 20;
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-
-  ctx.beginPath();
-  ctx.strokeStyle = "#2ee59d";
-  ctx.lineWidth = 2;
-
-  data.forEach((value, index) => {
-    const x =
-      padding +
-      (index / (data.length - 1)) * (chart.width - padding * 2);
-    const y =
-      chart.height -
-      padding -
-      ((value - min) / (max - min)) *
-        (chart.height - padding * 2);
-
-    if (index === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
-
-  ctx.shadowColor = "#2ee59d";
-  ctx.shadowBlur = 10;
-  ctx.stroke();
-  ctx.shadowBlur = 0;
-}
-
