@@ -152,3 +152,77 @@ button:hover {
     background: #1f2752;
   }
 }
+
+/* =====================
+   HOME PAGE SECTIONS
+===================== */
+.recommendations {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.recommendation {
+  background: #121830;
+  border: 1px solid #1b2240;
+  border-radius: 10px;
+  padding: 16px;
+  flex: 1;
+  margin-right: 10px;
+}
+
+.recommendation:last-child {
+  margin-right: 0;
+}
+
+.recommendation h3 {
+  margin-top: 0;
+}
+
+.recommendation.buy h3 {
+  color: #2ee59d; /* Green for buy */
+}
+
+.recommendation.sell h3 {
+  color: #ff6b6b; /* Red for sell */
+}
+
+.recommendation ul {
+  list-style: none;
+  padding: 0;
+}
+
+.recommendation li {
+  padding: 8px 0;
+  border-bottom: 1px solid #1b2240;
+}
+
+.recommendation li:last-child {
+  border-bottom: none;
+}
+
+.popular-stocks {
+  background: #121830;
+  border: 1px solid #1b2240;
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 20px;
+}
+
+.popular-stocks h3 {
+  margin-top: 0;
+}
+
+.popular-stocks ul {
+  list-style: none;
+  padding: 0;
+}
+
+.popular-stocks li {
+  padding: 8px 0;
+  border-bottom: 1px solid #1b2240;
+}
+
+.popular-stocks li:last-child {
+  border-bottom: none;
+}
