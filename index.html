@@ -19,10 +19,38 @@
 
 <main>
 
-  <section id="home" class="page active">
-    <h2>Market Highlights</h2>
-    <div id="recommendations"></div>
-  </section>
+<section id="home" class="page active">
+  <h2>Market Highlights</h2>
+
+  <!-- Existing content -->
+  <div id="recommendations"></div>
+
+  <!-- AI Recommendations -->
+  <div class="recommendations">
+    <div class="recommendation buy">
+      <h3>AI Recommend: Buy</h3>
+      <ul id="aiBuyList">
+        <!-- Dynamically populated -->
+      </ul>
+    </div>
+
+    <div class="recommendation sell">
+      <h3>AI Recommend: Sell</h3>
+      <ul id="aiSellList">
+        <!-- Dynamically populated -->
+      </ul>
+    </div>
+  </div>
+
+  <!-- Popular/Top Performing Stocks -->
+  <div class="popular-stocks">
+    <h3>Top Performing Stocks</h3>
+    <ul id="popularStocksList">
+      <!-- Dynamically populated -->
+    </ul>
+  </div>
+</section>
+
 
   <section id="search" class="page">
     <h2>Search Asset</h2>
