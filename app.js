@@ -64,6 +64,9 @@ searchInput?.addEventListener("keydown", async (e) => {
     assetName.textContent = symbol;
     assetPrice.textContent = `$${price}`;
     searchResult.style.display = "block";
+     
+    const data = generateMockData();
+    drawChart(data);
 
     updateFavButton();
   } catch {
@@ -121,3 +124,50 @@ function renderFavorites() {
 }
 
 renderFavorites();
+
+
+/* =========================
+   SIMPLE PRICE CHART
+========================= */
+const chart = document.getElementById("chart");
+const ctx = chart.getContext("2d");
+
+function generateMockData() {
+  let price = Math.random() * 100 + 50;
+  return Array.from({ length: 30 }, () => {
+    price += (Math.random() - 0.5) * 5;
+    return price;
+  });
+}
+
+function drawChart(data) {
+  ctx.clearRect(0, 0, chart.width, chart.height);
+
+  const padding = 20;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+
+  ctx.beginPath();
+  ctx.strokeStyle = "#2ee59d";
+  ctx.lineWidth = 2;
+
+  data.forEach((value, index) => {
+    const x =
+      padding +
+      (index / (data.length - 1)) * (chart.width - padding * 2);
+    const y =
+      chart.height -
+      padding -
+      ((value - min) / (max - min)) *
+        (chart.height - padding * 2);
+
+    if (index === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+
+  ctx.shadowColor = "#2ee59d";
+  ctx.shadowBlur = 10;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
