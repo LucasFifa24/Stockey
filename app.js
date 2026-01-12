@@ -4,7 +4,7 @@
 const TWELVE_API_KEY = "77ff81accb7449078076fa13c52a3c32";
 
 /* =========================
-   PAGE NAVIGATION
+   PAGE NAVIGATIO
 ========================= */
 const pages = document.querySelectorAll(".page");
 const navButtons = document.querySelectorAll(".nav-btn");
