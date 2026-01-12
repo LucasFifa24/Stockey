@@ -30,8 +30,9 @@ async function searchAsset(symbol = null) {
   if (!asset) return;
 
   currentSymbol = asset;
-  document.getElementById("chart").hidden = true;
+  document.getElementById("chartContainer").hidden = true;
   document.getElementById("assetInfo").innerHTML = "Loading…";
+  document.getElementById("favBtn").hidden = true; // Hide favorites button initially
 
   try {
     const url = `${BASE_URL}?symbol=${asset}&interval=${currentInterval}&apikey=${API_KEY}&outputsize=50`;
@@ -57,11 +58,17 @@ function showInvalid(symbol) {
     `<p style="color:#ff6b6b">❌ "${symbol}" not found. Check spelling.</p>`;
 
   document.getElementById("chartContainer").hidden = true;
+  document.getElementById("favBtn").hidden = true;
+
+  // Clear or reset favorites button and chart
   if (chartInstance) {
     chartInstance.destroy();
     chartInstance = null;
   }
+
+  // Optionally clear favorites list or other related data here
 }
+
 
 // ============================
 // RENDER DATA
