@@ -1,172 +1,123 @@
-let chart;
-let currentTimeframe = '1d';
+/* =========================
+   PAGE NAVIGATION + ANIMATION
+========================= */
+const pages = document.querySelectorAll(".page");
+const navButtons = document.querySelectorAll(".nav-btn");
 
-// Page navigation
-function showPage(id) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+function showPage(pageId) {
+  pages.forEach(page => {
+    page.classList.remove("active", "slide-in");
+  });
+
+  const target = document.getElementById(pageId);
+  target.classList.add("active", "slide-in");
+
+  navButtons.forEach(btn => btn.classList.remove("active"));
+  document.querySelector(`[data-page="${pageId}"]`).classList.add("active");
 }
 
-// Load home page data
-async function loadHome() {
-  const trendingSymbols = ["AAPL", "BTC/USD", "SP500"];
-  const aiSymbols = ["TSLA", "ETH/USD"];
+navButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    showPage(btn.dataset.page);
+  });
+});
 
-  const trending = document.getElementById("trending");
-  const aiPicks = document.getElementById("aiPicks");
+/* =========================
+   CLOCK
+========================= */
+function updateClock() {
+  const now = new Date();
+  document.getElementById("clock").textContent =
+    now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+setInterval(updateClock, 1000);
+updateClock();
 
-  trending.innerHTML = "";
-  aiPicks.innerHTML = "";
+/* =========================
+   SEARCH + FAVORITES
+========================= */
+const searchInput = document.getElementById("searchInput");
+const searchResult = document.getElementById("searchResult");
+const assetName = document.getElementById("assetName");
+const assetPrice = document.getElementById("assetPrice");
+const searchError = document.getElementById("searchError");
+const favBtn = document.getElementById("favBtn");
+const favoritesList = document.getElementById("favoritesList");
 
-  for (const s of trendingSymbols) {
-    const d = await getAsset(s);
-    if (d.error) continue;
+let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+let currentSymbol = null;
 
-    trending.innerHTML += `
-      <div class="card">
-        <span>${s}</span>
-        <span class="${d.signal.toLowerCase()}">${d.signal}</span>
-        <button onclick="addToFavorites('${s}')">❤️</button>
-      </div>
-    `;
+searchInput?.addEventListener("keydown", async (e) => {
+  if (e.key !== "Enter") return;
+
+  const symbol = searchInput.value.trim().toUpperCase();
+  searchError.textContent = "";
+  searchResult.style.display = "none";
+
+  if (!symbol) return;
+
+  try {
+    // MOCK price (safe, no API errors)
+    const price = (Math.random() * 1000).toFixed(2);
+
+    currentSymbol = symbol;
+    assetName.textContent = symbol;
+    assetPrice.textContent = `$${price}`;
+    searchResult.style.display = "block";
+
+    updateFavButton();
+  } catch {
+    searchError.textContent = "Check your spelling or symbol";
   }
+});
 
-  for (const s of aiSymbols) {
-    const d = await getAsset(s);
-    if (d.error) continue;
-
-    aiPicks.innerHTML += `
-      <div class="card">
-        <span>${s}</span>
-        <span class="${d.signal.toLowerCase()}">${d.signal}</span>
-        <button onclick="addToFavorites('${s}')">❤️</button>
-      </div>
-    `;
+function updateFavButton() {
+  if (favorites.includes(currentSymbol)) {
+    favBtn.textContent = "♥";
+    favBtn.classList.add("active");
+  } else {
+    favBtn.textContent = "♡";
+    favBtn.classList.remove("active");
   }
 }
 
-// Search and display asset data
-async function searchAsset() {
-  const symbol = document.getElementById("searchInput").value.trim();
-  const result = document.getElementById("result");
+favBtn?.addEventListener("click", () => {
+  if (!currentSymbol) return;
 
-  result.innerHTML = "Loading...";
+  if (favorites.includes(currentSymbol)) {
+    favorites = favorites.filter(f => f !== currentSymbol);
+  } else {
+    favorites.push(currentSymbol);
+  }
 
-  const d = await getAsset(symbol, currentTimeframe);
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+  updateFavButton();
+  renderFavorites();
+});
 
-  if (!d || d.error) {
-    result.innerHTML = `<p class="error">Check your spelling</p>`;
+/* =========================
+   FAVORITES PAGE
+========================= */
+function renderFavorites() {
+  if (favorites.length === 0) {
+    favoritesList.textContent = "No favorites yet";
     return;
   }
 
-  result.innerHTML = `
-    <div class="card">
-      <span>${symbol.toUpperCase()}</span>
-      <span class="${d.signal.toLowerCase()}">${d.signal}</span>
-      <button onclick="addToFavorites('${symbol.toUpperCase()}')">❤️</button>
-    </div>
-    <p>Price: $${d.price.toFixed(2)}</p>
-    <p>Change: ${d.change.toFixed(2)}%</p>
-  `;
+  favoritesList.innerHTML = "";
+  favorites.forEach(symbol => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.textContent = symbol;
 
-  loadChart(symbol);
-}
+    div.onclick = () => {
+      showPage("page-search");
+      searchInput.value = symbol;
+      searchInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    };
 
-// Load chart for the searched asset
-async function loadChart(symbol) {
-  const interval = getInterval(currentTimeframe);
-  const timeSeries = await getTimeSeries(symbol, interval);
-
-  if (!timeSeries) return;
-
-  const { labels, prices } = timeSeries;
-
-  const ctx = document.getElementById("chart").getContext("2d");
-
-  if (chart) chart.destroy();
-
-  chart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [{
-        data: prices,
-        borderWidth: 2,
-        tension: 0.3
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        x: { display: false }
-      }
-    }
+    favoritesList.appendChild(div);
   });
 }
 
-// Change timeframe and reload chart
-function changeTimeframe(timeframe) {
-  currentTimeframe = timeframe;
-  const symbol = document.getElementById("searchInput").value.trim();
-  if (symbol) {
-    loadChart(symbol);
-  }
-}
-
-// Map timeframe to interval
-function getInterval(timeframe) {
-  switch (timeframe) {
-    case '1d': return '1min';
-    case '1w': return '5min';
-    case '1m': return '15min';
-    default: return '1min';
-  }
-}
-
-// Save asset to favorites
-function addToFavorites(symbol) {
-  let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-  if (!favorites.includes(symbol)) {
-    favorites.push(symbol);
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-  }
-  loadFavorites();
-}
-
-// Load favorites from local storage
-function loadFavorites() {
-  const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-  const favoritesList = document.getElementById("favoritesList");
-  favoritesList.innerHTML = '';
-
-  for (const symbol of favorites) {
-    favoritesList.innerHTML += `
-      <div class="card" onclick="loadFavoriteAsset('${symbol}')">
-        ${symbol}
-        <button onclick="removeFromFavorites('${symbol}'); event.stopPropagation();">Remove</button>
-      </div>
-    `;
-  }
-}
-
-// Remove asset from favorites
-function removeFromFavorites(symbol) {
-  let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-  favorites = favorites.filter(item => item !== symbol);
-  localStorage.setItem('favorites', JSON.stringify(favorites));
-  loadFavorites();
-}
-
-// Load favorite asset details
-async function loadFavoriteAsset(symbol) {
-  document.getElementById("searchInput").value = symbol;
-  await searchAsset();
-  showPage('search');
-}
-
-// Initialize home page on load
-loadHome();
-loadFavorites();
+renderFavorites();
