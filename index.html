@@ -5,75 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Stockey</title>
 
-  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" href="favicon.png">
   <link rel="stylesheet" href="styles.css">
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-  <!-- HEADER -->
-  <header class="top-bar">
-    <h1>Stockey</h1>
-  </header>
+<header class="top-bar">
+  <h1>Stockey</h1>
+</header>
 
-  <!-- PAGES -->
-  <main>
-    <!-- HOME -->
-    <section id="home" class="page active">
-      <h2>Market Highlights</h2>
-      <div id="recommendations"></div>
-    </section>
+<main>
 
-    <!-- SEARCH -->
-    <section id="search" class="page">
-      <h2>Search Asset</h2>
+  <section id="home" class="page active">
+    <h2>Market Highlights</h2>
+    <div id="recommendations"></div>
+  </section>
 
-      <input id="searchInput" placeholder="AAPL, BTC/USD, SPX..." />
-      <button onclick="searchAsset()">Search</button>
+  <section id="search" class="page">
+    <h2>Search Asset</h2>
 
-      <div id="assetInfo"></div>
+    <input id="searchInput" placeholder="AAPL, BTC/USD, EUR/USD…" />
+    <button onclick="searchAsset()">Search</button>
 
-      <div class="timeframes">
-        <button onclick="setTimeframe('1min')">1M</button>
-        <button onclick="setTimeframe('5min')">5M</button>
-        <button onclick="setTimeframe('15min')">15M</button>
-        <button onclick="setTimeframe('1h')">1H</button>
-        <button onclick="setTimeframe('1day')">1D</button>
-      </div>
+    <div id="assetInfo"></div>
 
-      <canvas id="chart" hidden></canvas>
+    <div class="timeframes">
+      <button onclick="setTimeframe('1min')">1M</button>
+      <button onclick="setTimeframe('5min')">5M</button>
+      <button onclick="setTimeframe('15min')">15M</button>
+      <button onclick="setTimeframe('1h')">1H</button>
+      <button onclick="setTimeframe('1day')">1D</button>
+    </div>
 
-      <button id="favBtn" onclick="toggleFavorite()" hidden>❤️ Favorite</button>
-    </section>
+    <!-- FIXED HEIGHT CHART -->
+    <div class="chart-container" id="chartContainer" hidden>
+      <canvas id="chart"></canvas>
+    </div>
 
-    <!-- FAVORITES -->
-    <section id="favorites" class="page">
-      <h2>Favorites</h2>
-      <div id="favoritesList"></div>
-    </section>
-  </main>
+    <button id="favBtn" onclick="toggleFavorite()" hidden>❤️ Favorite</button>
+  </section>
 
-  <!-- BOTTOM NAV -->
-  <nav class="bottom-nav">
-    <button class="nav-btn active" onclick="showPage('home')">
-      <span class="icon">🏠</span>
-      <span>Home</span>
-    </button>
+  <section id="favorites" class="page">
+    <h2>Favorites</h2>
+    <div id="favoritesList"></div>
+  </section>
 
-    <button class="nav-btn" onclick="showPage('search')">
-      <span class="icon">🔍</span>
-      <span>Search</span>
-    </button>
+</main>
 
-    <button class="nav-btn" onclick="showPage('favorites')">
-      <span class="icon">❤️</span>
-      <span>Favorites</span>
-    </button>
-  </nav>
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showPage('home')">
+    <span class="icon">🏠</span> Home
+  </button>
+  <button class="nav-btn" onclick="showPage('search')">
+    <span class="icon">🔍</span> Search
+  </button>
+  <button class="nav-btn" onclick="showPage('favorites')">
+    <span class="icon">❤️</span> Favorites
+  </button>
+</nav>
 
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
