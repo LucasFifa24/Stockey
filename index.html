@@ -1,66 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/png" href="favicon.png">
-
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Stockey</title>
-  
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <!-- Navigation -->
-  <div class="nav">
-    <button onclick="showPage('home')">Home</button>
-    <button onclick="showPage('search')">Search</button>
-    <button onclick="showPage('favorites')">Favorites</button>
-  </div>
+<div id="app">
 
-  <!-- Home Page -->
-  <div id="home" class="page active">
-    <h1 class="title">Stockey</h1>
-
-    <div class="section">
-      <h2>🔥 Trending</h2>
-      <div id="trending"></div>
+  <!-- HEADER -->
+  <header>
+    <div>
+      <h1>Stockey</h1>
+      <span>AI-Powered Trading Insights</span>
     </div>
+    <span id="clock"></span>
+  </header>
 
-    <div class="section">
-      <h2>🤖 AI Picks</h2>
-      <div id="aiPicks"></div>
-    </div>
-  </div>
+  <!-- MAIN -->
+  <main>
 
-  <!-- Search Page -->
-  <div id="search" class="page">
-    <h2>Search Asset</h2>
+    <!-- HOME -->
+    <section id="page-home" class="page active">
+      <div class="section-title hot">📈 Hot Movers</div>
+      <div class="empty-text">No hot movers right now</div>
 
-    <input id="searchInput" placeholder="AAPL, BTC/USD, SP500, EUR/USD" />
-    <button onclick="searchAsset()">Search</button>
+      <div class="section-title buy">⬆ AI Recommends: Buy</div>
+      <div class="empty-text">No strong buy signals right now</div>
 
-    <div class="section">
-      <h3>Timeframe</h3>
-      <button onclick="changeTimeframe('1d')">1D</button>
-      <button onclick="changeTimeframe('1w')">1W</button>
-      <button onclick="changeTimeframe('1m')">1M</button>
-    </div>
+      <div class="section-title sell">⬇ AI Recommends: Sell</div>
+      <div class="empty-text">No strong sell signals right now</div>
+    </section>
 
-    <div id="result"></div>
-    <canvas id="chart"></canvas>
-  </div>
+    <!-- SEARCH -->
+    <section id="page-search" class="page">
+      <div class="section-title">🔍 Search Asset</div>
 
-  <!-- Favorites Page -->
-  <div id="favorites" class="page">
-    <h2>Favorites</h2>
-    <div id="favoritesList"></div>
-  </div>
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search stock, crypto, forex..."
+      />
 
-  <!-- Scripts -->
-  <script src="data.js"></script>
-  <script src="app.js"></script>
+      <div id="searchResult" class="card" style="display:none;">
+        <h3 id="assetName"></h3>
+        <p id="assetPrice"></p>
+        <button id="favBtn" class="favorite-btn">♡</button>
+      </div>
+
+      <div id="searchError" class="empty-text"></div>
+    </section>
+
+    <!-- FAVORITES -->
+    <section id="page-favorites" class="page">
+      <div class="section-title">❤️ Favorites</div>
+      <div id="favoritesList" class="empty-text">
+        No favorites yet
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="page-settings" class="page">
+      <div class="section-title">⚙ Settings</div>
+      <div class="empty-text">
+        Account & preferences coming soon
+      </div>
+    </section>
+
+  </main>
+
+  <!-- NAV -->
+  <nav>
+    <button class="nav-btn active" data-page="page-home">🏠 Home</button>
+    <button class="nav-btn" data-page="page-search">🔍 Search</button>
+    <button class="nav-btn" data-page="page-favorites">❤️ Favorites</button>
+    <button class="nav-btn" data-page="page-settings">⚙ Settings</button>
+  </nav>
+
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
