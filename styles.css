@@ -19,6 +19,14 @@ html, body {
   color: #e6ebff;
 }
 
+/* Remove browser button styles */
+button {
+  background: none;
+  border: none;
+  outline: none;
+  color: inherit;
+}
+
 /* =========================
    APP CONTAINER
 ========================= */
@@ -41,20 +49,11 @@ header {
 header h1 {
   font-size: 22px;
   font-weight: 700;
-  letter-spacing: 0.3px;
 }
 
 header span {
   font-size: 13px;
   color: #7c89b8;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  font-size: 13px;
-  color: #9fb0ff;
 }
 
 /* =========================
@@ -65,14 +64,20 @@ main {
   padding: 10px 28px 110px;
 }
 
-/* Section Titles */
+/* =========================
+   SECTION TITLES
+========================= */
 .section-title {
   display: flex;
   align-items: center;
   gap: 10px;
   font-size: 15px;
   font-weight: 600;
-  margin: 22px 0 10px;
+  margin-top: 26px;
+}
+
+.section-title.hot {
+  color: #6aa8ff;
 }
 
 .section-title.buy {
@@ -83,30 +88,26 @@ main {
   color: #ff6b6b;
 }
 
-.section-title.hot {
-  color: #6aa8ff;
-}
-
-/* Empty State Text */
+/* Empty text */
 .empty-text {
-  color: #6c7bb5;
+  margin-left: 26px;
+  margin-top: 10px;
   font-size: 14px;
-  margin-left: 28px;
-  margin-top: 8px;
+  color: #6c7bb5;
 }
 
 /* =========================
-   CARD STYLE (for future data)
+   CARDS
 ========================= */
 .card {
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-radius: 14px;
   background: linear-gradient(
     180deg,
     rgba(255,255,255,0.06),
     rgba(255,255,255,0.02)
   );
-  border-radius: 14px;
-  padding: 16px 18px;
-  margin-top: 12px;
   backdrop-filter: blur(14px);
   box-shadow:
     0 0 0 1px rgba(255,255,255,0.05),
@@ -120,12 +121,11 @@ input[type="text"] {
   width: 100%;
   max-width: 420px;
   padding: 14px 16px;
+  font-size: 15px;
+  border-radius: 12px;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 12px;
   color: #fff;
-  font-size: 15px;
-  outline: none;
 }
 
 input::placeholder {
@@ -133,15 +133,13 @@ input::placeholder {
 }
 
 /* =========================
-   FAVORITE HEART
+   FAVORITE BUTTON
 ========================= */
 .favorite-btn {
-  background: none;
-  border: none;
   font-size: 20px;
   cursor: pointer;
   color: #5f6fa8;
-  transition: transform 0.2s, color 0.2s;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .favorite-btn.active {
@@ -172,7 +170,7 @@ nav {
   align-items: center;
 }
 
-/* Nav Button */
+/* Nav buttons */
 .nav-btn {
   display: flex;
   flex-direction: column;
@@ -180,17 +178,15 @@ nav {
   gap: 6px;
   font-size: 12px;
   color: #7f8ccf;
-  background: none;
-  border: none;
   cursor: pointer;
-  transition: color 0.25s;
+  transition: color 0.25s ease;
 }
 
 .nav-btn i {
   font-size: 20px;
 }
 
-/* Active Nav */
+/* Active nav */
 .nav-btn.active {
   color: #5da9ff;
 }
@@ -203,14 +199,10 @@ nav {
 }
 
 /* =========================
-   RESPONSIVE
+   MOBILE
 ========================= */
 @media (max-width: 600px) {
   main {
     padding: 10px 18px 120px;
-  }
-
-  header h1 {
-    font-size: 20px;
   }
 }
