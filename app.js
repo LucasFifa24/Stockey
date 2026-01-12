@@ -1,4 +1,3 @@
-
 // ============================
 // CONFIG
 // ============================
@@ -19,6 +18,51 @@ function showPage(pageId) {
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
   event.target.closest(".nav-btn").classList.add("active");
 }
+
+// ============================
+// HOMEPAGE DATA
+// ============================
+function loadHomePage() {
+  // Mock data for AI recommendations
+  const aiBuyAssets = ["AAPL", "TSLA", "GOOGL"];
+  const aiSellAssets = ["AMZN", "NFLX", "FB"];
+
+  // Mock data for popular stocks
+  const popularStocks = ["AAPL", "MSFT", "TSLA", "NVDA", "FB"];
+
+  const aiBuyList = document.getElementById("aiBuyList");
+  const aiSellList = document.getElementById("aiSellList");
+  const popularStocksList = document.getElementById("popularStocksList");
+
+  // Clear existing lists
+  aiBuyList.innerHTML = "";
+  aiSellList.innerHTML = "";
+  popularStocksList.innerHTML = "";
+
+  // Populate AI Buy recommendations
+  aiBuyAssets.forEach(asset => {
+    const li = document.createElement("li");
+    li.textContent = asset;
+    aiBuyList.appendChild(li);
+  });
+
+  // Populate AI Sell recommendations
+  aiSellAssets.forEach(asset => {
+    const li = document.createElement("li");
+    li.textContent = asset;
+    aiSellList.appendChild(li);
+  });
+
+  // Populate popular stocks
+  popularStocks.forEach(asset => {
+    const li = document.createElement("li");
+    li.textContent = asset;
+    popularStocksList.appendChild(li);
+  });
+}
+
+// Call this function when the homepage is loaded
+loadHomePage();
 
 // ============================
 // SEARCH
@@ -65,10 +109,7 @@ function showInvalid(symbol) {
     chartInstance.destroy();
     chartInstance = null;
   }
-
-  // Optionally clear favorites list or other related data here
 }
-
 
 // ============================
 // RENDER DATA
