@@ -4,23 +4,22 @@
 const TWELVE_API_KEY = "77ff81accb7449078076fa13c52a3c32";
 
 /* =========================
-   PAGE NAVIGATIO
+   PAGE NAV
 ========================= */
 const pages = document.querySelectorAll(".page");
 const navButtons = document.querySelectorAll(".nav-btn");
 
-function showPage(pageId) {
-  pages.forEach(p => p.classList.remove("active", "slide-in"));
-  const page = document.getElementById(pageId);
-  page.classList.add("active", "slide-in");
+function showPage(id) {
+  pages.forEach(p => p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 
   navButtons.forEach(b => b.classList.remove("active"));
-  document.querySelector(`[data-page="${pageId}"]`).classList.add("active");
+  document.querySelector(`[data-page="${id}"]`).classList.add("active");
 }
 
-navButtons.forEach(btn => {
-  btn.addEventListener("click", () => showPage(btn.dataset.page));
-});
+navButtons.forEach(b =>
+  b.addEventListener("click", () => showPage(b.dataset.page))
+);
 
 /* =========================
    CLOCK
@@ -44,34 +43,46 @@ const favBtn = document.getElementById("favBtn");
 const favoritesList = document.getElementById("favoritesList");
 const chart = document.getElementById("chart");
 const ctx = chart.getContext("2d");
+const tfButtons = document.querySelectorAll(".tf-btn");
 
 /* =========================
    STATE
 ========================= */
 let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 let currentSymbol = null;
+let currentTF = "1D";
 
 /* =========================
-   TWELVE DATA FETCH
+   TIMEFRAME CONFIG
 ========================= */
-async function fetchTwelveData(symbol) {
+const TF_MAP = {
+  "1D": { interval: "5min", size: 60 },
+  "1W": { interval: "15min", size: 80 },
+  "1M": { interval: "1h", size: 120 }
+};
+
+/* =========================
+   DATA FETCH
+========================= */
+async function fetchData(symbol) {
+  const tf = TF_MAP[currentTF];
   const url =
     `https://api.twelvedata.com/time_series` +
     `?symbol=${symbol}` +
-    `&interval=5min` +
-    `&outputsize=60` +
+    `&interval=${tf.interval}` +
+    `&outputsize=${tf.size}` +
     `&apikey=${TWELVE_API_KEY}`;
 
   const res = await fetch(url);
   const data = await res.json();
 
-  if (!data.values) throw new Error("No data");
+  if (!data.values) throw new Error("Invalid");
 
   return data.values.reverse();
 }
 
 /* =========================
-   CHART HELPERS
+   CHART
 ========================= */
 function clearChart() {
   ctx.clearRect(0, 0, chart.width, chart.height);
@@ -84,49 +95,39 @@ function drawChart(values) {
   const prices = values.map(v => Number(v.close));
   const max = Math.max(...prices);
   const min = Math.min(...prices);
-  const padding = 20;
+  const pad = 20;
 
-  const isUp = prices[prices.length - 1] >= prices[0];
-  ctx.strokeStyle = isUp ? "#2ee59d" : "#ff6b6b";
+  ctx.strokeStyle =
+    prices[prices.length - 1] >= prices[0] ? "#2ee59d" : "#ff6b6b";
   ctx.lineWidth = 2;
-  ctx.shadowColor = ctx.strokeStyle;
-  ctx.shadowBlur = 10;
 
   ctx.beginPath();
-  prices.forEach((price, i) => {
-    const x =
-      padding +
-      (i / (prices.length - 1)) * (chart.width - padding * 2);
+  prices.forEach((p, i) => {
+    const x = pad + (i / (prices.length - 1)) * (chart.width - pad * 2);
     const y =
       chart.height -
-      padding -
-      ((price - min) / (max - min)) *
-        (chart.height - padding * 2);
-
+      pad -
+      ((p - min) / (max - min)) * (chart.height - pad * 2);
     i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
   });
 
   ctx.stroke();
-  ctx.shadowBlur = 0;
 }
 
 /* =========================
-   SEARCH HANDLER (FIXED)
+   SEARCH
 ========================= */
 searchInput.addEventListener("keydown", async (e) => {
   if (e.key !== "Enter") return;
 
-  // 🔥 CRITICAL FIX: always clear old chart immediately
   clearChart();
+  searchError.textContent = "";
 
   const symbol = searchInput.value.trim().toUpperCase();
-  searchError.textContent = "";
-  searchResult.style.display = "none";
-
   if (!symbol) return;
 
   try {
-    const values = await fetchTwelveData(symbol);
+    const values = await fetchData(symbol);
     const latest = values[values.length - 1];
 
     currentSymbol = symbol;
@@ -134,68 +135,70 @@ searchInput.addEventListener("keydown", async (e) => {
     assetPrice.textContent = `$${latest.close}`;
     searchResult.style.display = "block";
 
-    chart.style.display = "block"; // only show AFTER success
+    chart.style.display = "block";
     drawChart(values);
-
-    updateFavButton();
+    updateFavBtn();
   } catch {
-    searchError.textContent = "Check your spelling or symbol availability";
-    clearChart(); // ensure no stale chart ever remains
+    searchError.textContent = "Check your spelling or symbol";
+    clearChart();
   }
+});
+
+/* =========================
+   TIMEFRAME SWITCH
+========================= */
+tfButtons.forEach(btn => {
+  btn.addEventListener("click", async () => {
+    if (!currentSymbol) return;
+
+    tfButtons.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    currentTF = btn.dataset.tf;
+    clearChart();
+
+    try {
+      const values = await fetchData(currentSymbol);
+      chart.style.display = "block";
+      drawChart(values);
+    } catch {
+      clearChart();
+    }
+  });
 });
 
 /* =========================
    FAVORITES
 ========================= */
-function updateFavButton() {
-  if (favorites.includes(currentSymbol)) {
-    favBtn.textContent = "♥";
-    favBtn.classList.add("active");
-  } else {
-    favBtn.textContent = "♡";
-    favBtn.classList.remove("active");
-  }
+function updateFavBtn() {
+  favBtn.textContent = favorites.includes(currentSymbol) ? "♥" : "♡";
 }
 
-favBtn.addEventListener("click", () => {
+favBtn.onclick = () => {
   if (!currentSymbol) return;
-
   favorites.includes(currentSymbol)
     ? favorites = favorites.filter(f => f !== currentSymbol)
     : favorites.push(currentSymbol);
 
   localStorage.setItem("favorites", JSON.stringify(favorites));
-  updateFavButton();
+  updateFavBtn();
   renderFavorites();
-});
+};
 
 function renderFavorites() {
-  if (favorites.length === 0) {
-    favoritesList.textContent = "No favorites yet";
-    return;
-  }
-
-  favoritesList.innerHTML = "";
-  favorites.forEach(symbol => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.textContent = symbol;
-
-    card.onclick = () => {
+  favoritesList.innerHTML = favorites.length ? "" : "No favorites yet";
+  favorites.forEach(s => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.textContent = s;
+    div.onclick = () => {
       showPage("page-search");
-      searchInput.value = symbol;
-      searchInput.dispatchEvent(
-        new KeyboardEvent("keydown", { key: "Enter" })
-      );
+      searchInput.value = s;
+      searchInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
     };
-
-    favoritesList.appendChild(card);
+    favoritesList.appendChild(div);
   });
 }
 
 renderFavorites();
-
-/* =========================
-   INITIAL STATE
-========================= */
-clearChart(); // ensure chart is hidden on load
+clearChart();
