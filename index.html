@@ -4,94 +4,76 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Stockey</title>
-  <meta name="theme-color" content="#0b0f1a">
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css">
 
-  <!-- Favicon -->
-  <link rel="icon" href="favicon.png" />
-
-  <!-- Font -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
-    rel="stylesheet"
-  />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
   <!-- HEADER -->
   <header class="top-bar">
     <h1>Stockey</h1>
-    <span id="clock"></span>
   </header>
 
   <!-- PAGES -->
   <main>
-
-    <!-- HOME PAGE -->
-    <section id="page-home" class="page active">
+    <!-- HOME -->
+    <section id="home" class="page active">
       <h2>Market Highlights</h2>
-      <div class="card">Popular Assets</div>
-      <div class="card">Top Movers</div>
+      <div id="recommendations"></div>
     </section>
 
-    <!-- SEARCH PAGE -->
-    <section id="page-search" class="page">
-      <h2>Search</h2>
+    <!-- SEARCH -->
+    <section id="search" class="page">
+      <h2>Search Asset</h2>
 
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="Search stock, crypto, forex..."
-        autocomplete="off"
-      />
+      <input id="searchInput" placeholder="AAPL, BTC/USD, SPX..." />
+      <button onclick="searchAsset()">Search</button>
 
-      <p id="searchError" class="error"></p>
+      <div id="assetInfo"></div>
 
-      <div id="searchResult" style="display:none;">
-
-        <div class="asset-header">
-          <span id="assetName"></span>
-          <button id="favBtn">♡</button>
-        </div>
-
-        <div id="assetPrice" class="price"></div>
-
-        <!-- 🔥 TIMEFRAMES -->
-        <div class="timeframes">
-          <button class="tf-btn active" data-tf="1D">1D</button>
-          <button class="tf-btn" data-tf="1W">1W</button>
-          <button class="tf-btn" data-tf="1M">1M</button>
-        </div>
-
-        <!-- 🔥 CHART (HIDDEN BY DEFAULT) -->
-        <canvas
-          id="chart"
-          width="600"
-          height="220"
-          style="display:none;">
-        </canvas>
-
+      <div class="timeframes">
+        <button onclick="setTimeframe('1min')">1M</button>
+        <button onclick="setTimeframe('5min')">5M</button>
+        <button onclick="setTimeframe('15min')">15M</button>
+        <button onclick="setTimeframe('1h')">1H</button>
+        <button onclick="setTimeframe('1day')">1D</button>
       </div>
+
+      <canvas id="chart" hidden></canvas>
+
+      <button id="favBtn" onclick="toggleFavorite()" hidden>❤️ Favorite</button>
     </section>
 
-    <!-- FAVORITES PAGE -->
-    <section id="page-favorites" class="page">
+    <!-- FAVORITES -->
+    <section id="favorites" class="page">
       <h2>Favorites</h2>
       <div id="favoritesList"></div>
     </section>
-
   </main>
 
-  <!-- NAVIGATION -->
+  <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
-    <button class="nav-btn active" data-page="page-home">Home</button>
-    <button class="nav-btn" data-page="page-search">Search</button>
-    <button class="nav-btn" data-page="page-favorites">Favorites</button>
+    <button class="nav-btn active" onclick="showPage('home')">
+      <span class="icon">🏠</span>
+      <span>Home</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('search')">
+      <span class="icon">🔍</span>
+      <span>Search</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('favorites')">
+      <span class="icon">❤️</span>
+      <span>Favorites</span>
+    </button>
   </nav>
 
-  <!-- SCRIPT -->
   <script src="app.js"></script>
 </body>
 </html>
