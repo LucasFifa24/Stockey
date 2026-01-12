@@ -19,11 +19,6 @@ body {
   border-bottom: 1px solid #1b2240;
 }
 
-.top-bar h1 {
-  margin: 0;
-  font-size: 20px;
-}
-
 /* PAGES */
 .page {
   display: none;
@@ -69,9 +64,14 @@ button {
   border: 1px solid #1b2240;
 }
 
-.timeframes button:hover {
-  background: #171f3d;
-  color: #fff;
+/* 🔥 CHART FIX */
+.chart-container {
+  height: 320px;
+  margin-top: 14px;
+  background: #121830;
+  border: 1px solid #1b2240;
+  border-radius: 12px;
+  padding: 10px;
 }
 
 /* FAVORITES */
@@ -84,9 +84,7 @@ button {
   cursor: pointer;
 }
 
-/* =====================
-   BOTTOM NAV (ROUNDED RECTANGLE)
-===================== */
+/* BOTTOM NAV */
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -102,33 +100,23 @@ button {
   background: #121830;
   border: 1px solid #1b2240;
   color: #9aa1c7;
-  font-size: 12px;
   min-width: 92px;
   height: 48px;
-  border-radius: 14px; /* rounded rectangle */
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  cursor: pointer;
-  transition: background 0.12s ease, border 0.12s ease;
 }
 
-.nav-btn .icon {
-  font-size: 16px;
-}
-
-/* ACTIVE */
 .nav-btn.active {
   background: #2ee59d;
   color: #08120d;
   border-color: #2ee59d;
 }
 
-/* HOVER – SAME COLOR, SLIGHTLY LIGHTER */
 @media (hover: hover) {
   .nav-btn:hover {
-    background: #171f3d; /* slightly lighter */
-    border-color: #242c55;
+    background: #171f3d;
   }
 }
