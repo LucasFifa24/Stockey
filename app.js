@@ -1,5 +1,5 @@
 // ============================
-// CONFIG
+// COONFIG
 // ============================
 const API_KEY = "77ff81accb7449078076fa13c52a3c32";
 const BASE_URL = "https://api.twelvedata.com/time_series";
