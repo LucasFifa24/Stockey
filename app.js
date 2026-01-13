@@ -9,13 +9,13 @@ let currentInterval = "5min";
 let chartInstance = null;
 
 // ============================
-// PAGE NAVIGATION
+// PAGE NAVIGATION (FADE SAFE)
 // ============================
 function showPage(pageId) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.getElementById(pageId).classList.add("active");
-
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+
+  document.getElementById(pageId).classList.add("active");
   event.target.closest(".nav-btn").classList.add("active");
 }
 
@@ -23,45 +23,46 @@ function showPage(pageId) {
 // HOMEPAGE DATA
 // ============================
 function loadHomePage() {
-  // Mock data for AI recommendations
   const aiBuyAssets = ["AAPL", "TSLA", "GOOGL"];
-  const aiSellAssets = ["AMZN", "NFLX", "FB"];
-
-  // Mock data for popular stocks
-  const popularStocks = ["AAPL", "MSFT", "TSLA", "NVDA", "FB"];
+  const aiSellAssets = ["AMZN", "NFLX", "META"];
+  const popularStocks = ["AAPL", "MSFT", "NVDA", "TSLA", "AMD"];
 
   const aiBuyList = document.getElementById("aiBuyList");
   const aiSellList = document.getElementById("aiSellList");
   const popularStocksList = document.getElementById("popularStocksList");
 
-  // Clear existing lists
   aiBuyList.innerHTML = "";
   aiSellList.innerHTML = "";
   popularStocksList.innerHTML = "";
 
-  // Populate AI Buy recommendations
-  aiBuyAssets.forEach(asset => {
+  aiBuyAssets.forEach(sym => {
     const li = document.createElement("li");
-    li.textContent = asset;
+    li.textContent = sym;
+    li.onclick = () => quickSearch(sym);
     aiBuyList.appendChild(li);
   });
 
-  // Populate AI Sell recommendations
-  aiSellAssets.forEach(asset => {
+  aiSellAssets.forEach(sym => {
     const li = document.createElement("li");
-    li.textContent = asset;
+    li.textContent = sym;
+    li.onclick = () => quickSearch(sym);
     aiSellList.appendChild(li);
   });
 
-  // Populate popular stocks
-  popularStocks.forEach(asset => {
+  popularStocks.forEach(sym => {
     const li = document.createElement("li");
-    li.textContent = asset;
+    li.textContent = sym;
+    li.onclick = () => quickSearch(sym);
     popularStocksList.appendChild(li);
   });
 }
 
-// Call this function when the homepage is loaded
+function quickSearch(symbol) {
+  showPage("search");
+  document.getElementById("searchInput").value = symbol;
+  searchAsset(symbol);
+}
+
 loadHomePage();
 
 // ============================
@@ -75,11 +76,11 @@ async function searchAsset(symbol = null) {
 
   currentSymbol = asset;
   document.getElementById("chartContainer").hidden = true;
+  document.getElementById("favBtn").hidden = true;
   document.getElementById("assetInfo").innerHTML = "Loading…";
-  document.getElementById("favBtn").hidden = true; // Hide favorites button initially
 
   try {
-    const url = `${BASE_URL}?symbol=${asset}&interval=${currentInterval}&apikey=${API_KEY}&outputsize=50`;
+    const url = `${BASE_URL}?symbol=${asset}&interval=${currentInterval}&apikey=${API_KEY}&outputsize=60`;
     const res = await fetch(url);
     const data = await res.json();
 
@@ -89,13 +90,13 @@ async function searchAsset(symbol = null) {
     }
 
     renderAsset(asset, data.values.reverse());
-  } catch (err) {
+  } catch {
     showInvalid(asset);
   }
 }
 
 // ============================
-// INVALID SEARCH HANDLER
+// INVALID SEARCH
 // ============================
 function showInvalid(symbol) {
   document.getElementById("assetInfo").innerHTML =
@@ -104,7 +105,6 @@ function showInvalid(symbol) {
   document.getElementById("chartContainer").hidden = true;
   document.getElementById("favBtn").hidden = true;
 
-  // Clear or reset favorites button and chart
   if (chartInstance) {
     chartInstance.destroy();
     chartInstance = null;
@@ -112,7 +112,7 @@ function showInvalid(symbol) {
 }
 
 // ============================
-// RENDER DATA
+// RENDER ASSET
 // ============================
 function renderAsset(symbol, values) {
   const last = values[values.length - 1];
@@ -141,7 +141,6 @@ function drawChart(values) {
     data: {
       labels: values.map(v => v.datetime),
       datasets: [{
-        label: currentSymbol,
         data: values.map(v => v.close),
         borderColor: "#2ee59d",
         backgroundColor: "rgba(46,229,157,0.1)",
@@ -183,11 +182,9 @@ function saveFavorites(favs) {
 function toggleFavorite() {
   let favs = getFavorites();
 
-  if (favs.includes(currentSymbol)) {
-    favs = favs.filter(f => f !== currentSymbol);
-  } else {
-    favs.push(currentSymbol);
-  }
+  favs = favs.includes(currentSymbol)
+    ? favs.filter(f => f !== currentSymbol)
+    : [...favs, currentSymbol];
 
   saveFavorites(favs);
   updateFavButton();
@@ -204,26 +201,16 @@ function renderFavorites() {
   const list = document.getElementById("favoritesList");
   const favs = getFavorites();
 
-  list.innerHTML = "";
-
-  if (!favs.length) {
-    list.innerHTML = "<p>No favorites yet</p>";
-    return;
-  }
+  list.innerHTML = favs.length
+    ? ""
+    : "<p>No favorites yet</p>";
 
   favs.forEach(sym => {
     const div = document.createElement("div");
     div.textContent = sym;
-    div.onclick = () => {
-      showPage("search");
-      document.getElementById("searchInput").value = sym;
-      searchAsset(sym);
-    };
+    div.onclick = () => quickSearch(sym);
     list.appendChild(div);
   });
 }
 
-// ============================
-// INIT
-// ============================
 renderFavorites();
