@@ -8,15 +8,24 @@ let currentSymbol = "";
 let currentInterval = "5min";
 let chartInstance = null;
 
+const pages = ["home", "search", "favorites"];
+
 // ============================
-// PAGE NAVIGATION (FADE SAFE)
+// PAGE NAVIGATION (SAFE)
 // ============================
-function showPage(pageId) {
+function showPage(pageId, navButton = null) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
 
   document.getElementById(pageId).classList.add("active");
-  event.target.closest(".nav-btn").classList.add("active");
+
+  if (navButton) {
+    navButton.classList.add("active");
+  } else {
+    document
+      .querySelector(`.nav-btn[onclick*="${pageId}"]`)
+      ?.classList.add("active");
+  }
 }
 
 // ============================
@@ -34,6 +43,12 @@ function loadHomePage() {
   aiBuyList.innerHTML = "";
   aiSellList.innerHTML = "";
   popularStocksList.innerHTML = "";
+
+  [...aiBuyAssets, ...aiSellAssets, ...popularStocks].forEach(sym => {
+    const li = document.createElement("li");
+    li.textContent = sym;
+    li.onclick = () => quickSearch(sym);
+  });
 
   aiBuyAssets.forEach(sym => {
     const li = document.createElement("li");
@@ -59,8 +74,12 @@ function loadHomePage() {
 
 function quickSearch(symbol) {
   showPage("search");
-  document.getElementById("searchInput").value = symbol;
-  searchAsset(symbol);
+
+  // ✅ WAIT for page to activate before searching
+  requestAnimationFrame(() => {
+    document.getElementById("searchInput").value = symbol;
+    searchAsset(symbol);
+  });
 }
 
 loadHomePage();
@@ -71,7 +90,6 @@ loadHomePage();
 async function searchAsset(symbol = null) {
   const input = document.getElementById("searchInput");
   const asset = symbol || input.value.trim().toUpperCase();
-
   if (!asset) return;
 
   currentSymbol = asset;
@@ -84,10 +102,7 @@ async function searchAsset(symbol = null) {
     const res = await fetch(url);
     const data = await res.json();
 
-    if (!data.values) {
-      showInvalid(asset);
-      return;
-    }
+    if (!data.values) return showInvalid(asset);
 
     renderAsset(asset, data.values.reverse());
   } catch {
@@ -100,7 +115,7 @@ async function searchAsset(symbol = null) {
 // ============================
 function showInvalid(symbol) {
   document.getElementById("assetInfo").innerHTML =
-    `<p style="color:#ff6b6b">❌ "${symbol}" not found. Check spelling.</p>`;
+    `<p style="color:#ff6b6b">❌ "${symbol}" not found.</p>`;
 
   document.getElementById("chartContainer").hidden = true;
   document.getElementById("favBtn").hidden = true;
@@ -133,7 +148,6 @@ function renderAsset(symbol, values) {
 // ============================
 function drawChart(values) {
   const ctx = document.getElementById("chart").getContext("2d");
-
   if (chartInstance) chartInstance.destroy();
 
   chartInstance = new Chart(ctx, {
@@ -151,21 +165,9 @@ function drawChart(values) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: "#9aa1c7" } },
-        y: { ticks: { color: "#9aa1c7" } }
-      }
+      plugins: { legend: { display: false } }
     }
   });
-}
-
-// ============================
-// TIMEFRAMES
-// ============================
-function setTimeframe(interval) {
-  currentInterval = interval;
-  if (currentSymbol) searchAsset(currentSymbol);
 }
 
 // ============================
@@ -181,7 +183,6 @@ function saveFavorites(favs) {
 
 function toggleFavorite() {
   let favs = getFavorites();
-
   favs = favs.includes(currentSymbol)
     ? favs.filter(f => f !== currentSymbol)
     : [...favs, currentSymbol];
@@ -201,9 +202,7 @@ function renderFavorites() {
   const list = document.getElementById("favoritesList");
   const favs = getFavorites();
 
-  list.innerHTML = favs.length
-    ? ""
-    : "<p>No favorites yet</p>";
+  list.innerHTML = favs.length ? "" : "<p>No favorites yet</p>";
 
   favs.forEach(sym => {
     const div = document.createElement("div");
@@ -214,3 +213,33 @@ function renderFavorites() {
 }
 
 renderFavorites();
+
+// ============================
+// SWIPE GESTURES
+// ============================
+let startX = 0;
+let startY = 0;
+
+document.addEventListener("touchstart", e => {
+  startX = e.touches[0].clientX;
+  startY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener("touchend", e => {
+  const dx = e.changedTouches[0].clientX - startX;
+  const dy = e.changedTouches[0].clientY - startY;
+
+  if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy)) return;
+
+  const current = pages.findIndex(id =>
+    document.getElementById(id).classList.contains("active")
+  );
+
+  if (dx < 0 && current < pages.length - 1) {
+    showPage(pages[current + 1]);
+  }
+
+  if (dx > 0 && current > 0) {
+    showPage(pages[current - 1]);
+  }
+});
