@@ -1,14 +1,8 @@
 // ============================
-// CONNFIG
+// COONFIG
 // ============================
 const API_KEY = "77ff81accb7449078076fa13c52a3c32";
-const RSI_URL = "https://api.twelvedata.com/rsi";
-const EMA_URL = "https://api.twelvedata.com/ema";
-const SYMBOLS = {
-  buy: ["AAPL", "TSLA", "GOOGL"],
-  sell: ["AMZN", "NFLX", "META"],
-  popular: ["AAPL", "MSFT", "NVDA", "TSLA", "AMD"]
-};
+const BASE_URL = "https://api.twelvedata.com/time_series";
 
 let currentSymbol = "";
 let currentInterval = "5min";
@@ -35,9 +29,13 @@ function showPage(pageId, navButton = null) {
 }
 
 // ============================
-// HOMEPAGE DATA (REAL SIGNALS)
+// HOMEPAGE DATA
 // ============================
-async function loadHomePage() {
+function loadHomePage() {
+  const aiBuyAssets = ["AAPL", "TSLA", "GOOGL"];
+  const aiSellAssets = ["AMZN", "NFLX", "META"];
+  const popularStocks = ["AAPL", "MSFT", "NVDA", "TSLA", "AMD"];
+
   const aiBuyList = document.getElementById("aiBuyList");
   const aiSellList = document.getElementById("aiSellList");
   const popularStocksList = document.getElementById("popularStocksList");
@@ -46,71 +44,45 @@ async function loadHomePage() {
   aiSellList.innerHTML = "";
   popularStocksList.innerHTML = "";
 
-  // Fetch and process Buy assets
-  for (let symbol of SYMBOLS.buy) {
-    const signal = await getSignal(symbol);
-    if (signal === "buy") {
-      const li = createListItem(symbol);
-      aiBuyList.appendChild(li);
-    }
-  }
+  [...aiBuyAssets, ...aiSellAssets, ...popularStocks].forEach(sym => {
+    const li = document.createElement("li");
+    li.textContent = sym;
+    li.onclick = () => quickSearch(sym);
+  });
 
-  // Fetch and process Sell assets
-  for (let symbol of SYMBOLS.sell) {
-    const signal = await getSignal(symbol);
-    if (signal === "sell") {
-      const li = createListItem(symbol);
-      aiSellList.appendChild(li);
-    }
-  }
+  aiBuyAssets.forEach(sym => {
+    const li = document.createElement("li");
+    li.textContent = sym;
+    li.onclick = () => quickSearch(sym);
+    aiBuyList.appendChild(li);
+  });
 
-  // Populate popular stocks (static)
-  SYMBOLS.popular.forEach(symbol => {
-    const li = createListItem(symbol);
+  aiSellAssets.forEach(sym => {
+    const li = document.createElement("li");
+    li.textContent = sym;
+    li.onclick = () => quickSearch(sym);
+    aiSellList.appendChild(li);
+  });
+
+  popularStocks.forEach(sym => {
+    const li = document.createElement("li");
+    li.textContent = sym;
+    li.onclick = () => quickSearch(sym);
     popularStocksList.appendChild(li);
   });
 }
 
-// Helper to create a list item with search functionality
-function createListItem(symbol) {
-  const li = document.createElement("li");
-  li.textContent = symbol;
-  li.onclick = () => quickSearch(symbol);
-  return li;
+function quickSearch(symbol) {
+  showPage("search");
+
+  // ✅ WAIT for page to activate before searching
+  requestAnimationFrame(() => {
+    document.getElementById("searchInput").value = symbol;
+    searchAsset(symbol);
+  });
 }
 
-// ============================
-// Fetch Technical Indicators
-// ============================
-async function getSignal(symbol) {
-  try {
-    const rsiResponse = await fetch(`${RSI_URL}?symbol=${symbol}&interval=1day&time_period=14&apikey=${API_KEY}`);
-    const rsiData = await rsiResponse.json();
-
-    const emaResponse = await fetch(`${EMA_URL}?symbol=${symbol}&interval=1day&time_period=20&apikey=${API_KEY}`);
-    const emaData = await emaResponse.json();
-
-    if (!rsiData.values || !emaData.values) return "neutral";
-
-    const latestRSI = parseFloat(rsiData.values[0].rsi);
-    const latestEMA = parseFloat(emaData.values[0].ema);
-    const latestPrice = parseFloat(rsiData.values[0].close);
-
-    let signal = "neutral";
-
-    if (latestRSI < 30 && latestPrice < latestEMA) {
-      signal = "buy";
-    } else if (latestRSI > 70 && latestPrice > latestEMA) {
-      signal = "sell";
-    }
-
-    return signal;
-
-  } catch (error) {
-    console.error(`Error fetching data for ${symbol}:`, error);
-    return "neutral";
-  }
-}
+loadHomePage();
 
 // ============================
 // SEARCH
@@ -271,3 +243,5 @@ document.addEventListener("touchend", e => {
     showPage(pages[current - 1]);
   }
 });
+
+
