@@ -233,3 +233,11 @@ button:hover {
 .popular-stocks li:last-child {
   border-bottom: none;
 }
+
+
+/* Prevent sideways scrolling on swipe */
+body {
+  overflow-x: hidden;
+  touch-action: pan-y;
+}
+
