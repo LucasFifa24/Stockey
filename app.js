@@ -91,6 +91,17 @@ async function searchAsset(symbol = null) {
   const input = document.getElementById("searchInput");
   const asset = symbol || input.value.trim().toUpperCase();
   if (!asset) return;
+// ============================
+// TIMEFRAMES
+// ============================
+function setTimeframe(interval) {
+  currentInterval = interval;
+
+  // Only reload if something is already searched
+  if (currentSymbol) {
+    searchAsset(currentSymbol);
+  }
+}
 
   currentSymbol = asset;
   document.getElementById("chartContainer").hidden = true;
