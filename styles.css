@@ -14,6 +14,8 @@ body {
   background: #0b1020;
   color: #e8eaff;
   padding-bottom: 88px;
+  overflow-x: hidden;
+  touch-action: pan-y; /* Prevent sideways scrolling on swipe */
 }
 
 /* HEADER */
@@ -29,9 +31,7 @@ body {
   font-size: 20px;
 }
 
-/* =====================
-   PAGE TRANSITIONS (FIXED)
-===================== */
+/* PAGE TRANSITIONS (FIXED) */
 main {
   position: relative;
   min-height: calc(100vh - 140px);
@@ -60,10 +60,13 @@ input {
   color: #fff;
   border-radius: 8px;
   margin-bottom: 10px;
+  font-size: 16px; /* Prevent zooming on focus */
 }
 
 input:focus {
   border-color: #2a335e;
+  transform: scale(1); /* Prevent zooming on focus */
+  transition: transform 0.2s ease;
 }
 
 /* PRIMARY BUTTONS */
@@ -181,63 +184,4 @@ button:hover {
 }
 
 .recommendation h3 {
-  margin-top: 0;
-}
-
-.recommendation.buy h3 {
-  color: #2ee59d;
-}
-
-.recommendation.sell h3 {
-  color: #ff6b6b;
-}
-
-.recommendation ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.recommendation li {
-  padding: 8px 0;
-  border-bottom: 1px solid #1b2240;
-}
-
-.recommendation li:last-child {
-  border-bottom: none;
-}
-
-.popular-stocks {
-  background: #121830;
-  border: 1px solid #1b2240;
-  border-radius: 10px;
-  padding: 16px;
-  margin-top: 20px;
-}
-
-.popular-stocks h3 {
-  margin-top: 0;
-}
-
-.popular-stocks ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.popular-stocks li {
-  padding: 8px 0;
-  border-bottom: 1px solid #1b2240;
-}
-
-.popular-stocks li:last-child {
-  border-bottom: none;
-}
-
-
-/* Prevent sideways scrolling on swipe */
-body {
-  overflow-x: hidden;
-  touch-action: pan-y;
-}
-
+  margin-top:
