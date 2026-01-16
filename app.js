@@ -1,5 +1,5 @@
 // ============================
-// COONFIG
+// CONFIG
 // ============================
 const API_KEY = "77ff81accb7449078076fa13c52a3c32";
 const BASE_URL = "https://api.twelvedata.com/time_series";
@@ -44,12 +44,6 @@ function loadHomePage() {
   aiSellList.innerHTML = "";
   popularStocksList.innerHTML = "";
 
-  [...aiBuyAssets, ...aiSellAssets, ...popularStocks].forEach(sym => {
-    const li = document.createElement("li");
-    li.textContent = sym;
-    li.onclick = () => quickSearch(sym);
-  });
-
   aiBuyAssets.forEach(sym => {
     const li = document.createElement("li");
     li.textContent = sym;
@@ -75,7 +69,7 @@ function loadHomePage() {
 function quickSearch(symbol) {
   showPage("search");
 
-  // ✅ WAIT for page to activate before searching
+  // Wait for page to activate before searching
   requestAnimationFrame(() => {
     document.getElementById("searchInput").value = symbol;
     searchAsset(symbol);
@@ -91,17 +85,6 @@ async function searchAsset(symbol = null) {
   const input = document.getElementById("searchInput");
   const asset = symbol || input.value.trim().toUpperCase();
   if (!asset) return;
-// ============================
-// TIMEFRAMES
-// ============================
-function setTimeframe(interval) {
-  currentInterval = interval;
-
-  // Only reload if something is already searched
-  if (currentSymbol) {
-    searchAsset(currentSymbol);
-  }
-}
 
   currentSymbol = asset;
   document.getElementById("chartContainer").hidden = true;
@@ -118,6 +101,20 @@ function setTimeframe(interval) {
     renderAsset(asset, data.values.reverse());
   } catch {
     showInvalid(asset);
+  }
+}
+
+// ============================
+// TIMEFRAMES
+// ============================
+function setTimeframe(interval) {
+  if (currentInterval !== interval) {
+    currentInterval = interval;
+
+    // Only reload if something is already searched
+    if (currentSymbol) {
+      searchAsset(currentSymbol);
+    }
   }
 }
 
